@@ -1,52 +1,16 @@
-const API_URL = "https://api.persiantoolbox.ir/market";
-
 async function updatePrices() {
-    const ids = [
-        "gold18",
-        "mesghal",
-        "coin",
-        "dollar"
-    ];
-
-    ids.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-            element.textContent = "در حال دریافت...";
-        }
-    });
+    alert("تابع اجرا شد!");
 
     try {
-        const response = await fetch(API_URL);
-
-        if (!response.ok) {
-            throw new Error("خطا در دریافت اطلاعات");
-        }
+        const response = await fetch("https://api.persiantoolbox.ir/market");
+        alert("پاسخ API: " + response.status);
 
         const data = await response.json();
-
-        console.log("اطلاعات API:", data);
-        alert(JSON.stringify(data, null, 2));
-
-        // فعلاً زمان بروزرسانی را نمایش می‌دهیم
-        const timeElement = document.getElementById("updateTime");
-
-        if (timeElement) {
-            timeElement.textContent =
-                "آخرین بروزرسانی: " +
-                new Date().toLocaleTimeString("fa-IR");
-        }
+        alert(JSON.stringify(data).slice(0, 500));
 
     } catch (error) {
-        console.error(error);
-
-        const timeElement = document.getElementById("updateTime");
-
-        if (timeElement) {
-            timeElement.textContent =
-                "❌ دریافت قیمت‌ها ناموفق بود";
-        }
+        alert("خطا: " + error.message);
     }
 }
 
-// اجرای اولیه
 updatePrices();
