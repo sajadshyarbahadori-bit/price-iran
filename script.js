@@ -25,6 +25,7 @@ async function updatePrices() {
         const data = await response.json();
 
         console.log("اطلاعات API:", data);
+        alert(JSON.stringify(data, null, 2));
 
         // فعلاً زمان بروزرسانی را نمایش می‌دهیم
         const timeElement = document.getElementById("updateTime");
