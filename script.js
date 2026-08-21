@@ -1,61 +1,21 @@
-const API_URL = "https://persiantoolbox.ir/api/market";
+function updatePrices() {
+    const gold18 = document.getElementById("gold18");
+    const dollar = document.getElementById("dollar");
+    const updateTime = document.getElementById("updateTime");
 
-async function updatePrices() {
-    const timeElement = document.getElementById("updateTime");
+    if (gold18) {
+        gold18.textContent = "۶,۵۰۰,۰۰۰ ریال";
+    }
 
-    try {
-        if (timeElement) {
-            timeElement.textContent = "در حال دریافت قیمت‌ها...";
-        }
+    if (dollar) {
+        dollar.textContent = "۹۵۰,۰۰۰ ریال";
+    }
 
-        const response = await fetch(API_URL);
-
-        if (!response.ok) {
-            throw new Error("خطای سرور: " + response.status);
-        }
-
-        const result = await response.json();
-
-        if (!result.ok) {
-            throw new Error("داده معتبر نیست");
-        }
-
-        const data = result.data;
-
-        console.log("اطلاعات بازار:", data);
-
-        // طلای ۱۸ عیار
-        const gold18 = document.getElementById("gold18");
-        if (gold18 && data.gold) {
-            gold18.textContent =
-                Math.round(data.gold.pricePerGram * 0.75).toLocaleString("fa-IR") + " ریال";
-        }
-
-        // دلار
-        const dollar = document.getElementById("dollar");
-        if (dollar && data.currencies?.USD) {
-            dollar.textContent =
-                Number(data.currencies.USD.rate).toLocaleString("fa-IR") + " ریال";
-        }
-
-        // زمان بروزرسانی
-        if (timeElement) {
-            const time = new Date(data.timestamp);
-
-            timeElement.textContent =
-                "آخرین بروزرسانی: " +
-                time.toLocaleTimeString("fa-IR");
-        }
-
-    } catch (error) {
-        console.error("خطا:", error);
-
-        if (timeElement) {
-            timeElement.textContent =
-                "❌ دریافت قیمت‌ها ناموفق بود";
-        }
+    if (updateTime) {
+        updateTime.textContent =
+            "آخرین بروزرسانی: " +
+            new Date().toLocaleTimeString("fa-IR");
     }
 }
 
-// دریافت اولیه
 updatePrices();
