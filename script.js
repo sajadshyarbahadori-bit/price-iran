@@ -1,3 +1,4 @@
+alert("کد جدید اجرا شد!");
 const API_URL = "https://api.persiantoolbox.ir/market";
 
 async function updatePrices() {
