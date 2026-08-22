@@ -1,5 +1,6 @@
-```js
-let previousPrices = {};
+let previousPrices = JSON.parse(
+    localStorage.getItem("previousPrices") || "{}"
+);
 
 async function updatePrices() {
     const updateTime = document.getElementById("updateTime");
@@ -17,8 +18,6 @@ async function updatePrices() {
         }
 
         const prices = await response.json();
-
-        console.log("Prices:", prices);
 
         if (!Array.isArray(prices)) {
             throw new Error("فرمت پاسخ API آرایه نیست");
@@ -50,58 +49,62 @@ async function updatePrices() {
             }) + " USD";
         }
 
-        function showChange(id, key, value, formatter) {
+        function showPrice(id, key, value, formatter) {
             const element = document.getElementById(id);
 
             if (!element) return;
 
-            element.textContent = formatter(value);
+            if (!Number.isFinite(value)) {
+                element.textContent = "داده موجود نیست";
+                return;
+            }
 
-            if (!Number.isFinite(value)) return;
+            let change = "";
 
-            if (previousPrices[key] !== undefined) {
+            if (
+                previousPrices[key] !== undefined &&
+                Number.isFinite(previousPrices[key])
+            ) {
                 const oldValue = previousPrices[key];
 
-                if (oldValue !== 0) {
-                    const changePercent =
+                if (value > oldValue) {
+                    const percent =
                         ((value - oldValue) / oldValue) * 100;
 
-                    let changeText = "";
+                    change =
+                        ` ↑ ${percent.toFixed(2)}٪ افزایش`;
+                } else if (value < oldValue) {
+                    const percent =
+                        ((oldValue - value) / oldValue) * 100;
 
-                    if (changePercent > 0) {
-                        changeText =
-                            ` ↑ ${changePercent.toFixed(2)}٪ افزایش`;
-                    } else if (changePercent < 0) {
-                        changeText =
-                            ` ↓ ${Math.abs(changePercent).toFixed(2)}٪ کاهش`;
-                    } else {
-                        changeText = " ـ بدون تغییر";
-                    }
-
-                    element.textContent =
-                        formatter(value) + changeText;
+                    change =
+                        ` ↓ ${percent.toFixed(2)}٪ کاهش`;
+                } else {
+                    change = " ـ بدون تغییر";
                 }
             }
+
+            element.textContent = formatter(value) + change;
 
             previousPrices[key] = value;
         }
 
         // طلا
-        showChange(
+        showPrice(
             "gold18",
             "GOLD_18_RLS",
             data.GOLD_18_RLS,
             rial
         );
 
-        showChange(
+        showPrice(
             "gold24",
             "GOLD_24_RLS",
             data.GOLD_24_RLS,
             rial
         );
 
-        showChange(
+        showPrice(
             "mesghal",
             "GOLD_MESGHAL_RLS",
             data.GOLD_MESGHAL_RLS,
@@ -117,21 +120,21 @@ async function updatePrices() {
                 (data.SILVER_OUNCE_USD / 31.1034768) *
                 data.USD_RLS;
 
-            showChange(
+            showPrice(
                 "silver999",
                 "SILVER_999",
                 silver999,
                 rial
             );
 
-            showChange(
+            showPrice(
                 "silver925",
                 "SILVER_925",
                 silver999 * 0.925,
                 rial
             );
 
-            showChange(
+            showPrice(
                 "silverKg",
                 "SILVER_KG",
                 silver999 * 1000,
@@ -149,35 +152,35 @@ async function updatePrices() {
         }
 
         // سکه
-        showChange(
+        showPrice(
             "coin",
             "SEKKEH_RLS",
             data.SEKKEH_RLS,
             rial
         );
 
-        showChange(
+        showPrice(
             "bahar",
             "BAHAR_RLS",
             data.BAHAR_RLS,
             rial
         );
 
-        showChange(
+        showPrice(
             "halfCoin",
             "NIM_SEKKEH_RLS",
             data.NIM_SEKKEH_RLS,
             rial
         );
 
-        showChange(
+        showPrice(
             "quarterCoin",
             "ROB_SEKKEH_RLS",
             data.ROB_SEKKEH_RLS,
             rial
         );
 
-        showChange(
+        showPrice(
             "gramCoin",
             "GERAMI_SEKKEH_RLS",
             data.GERAMI_SEKKEH_RLS,
@@ -185,35 +188,35 @@ async function updatePrices() {
         );
 
         // ارز
-        showChange(
+        showPrice(
             "dollar",
             "USD_RLS",
             data.USD_RLS,
             rial
         );
 
-        showChange(
+        showPrice(
             "euro",
             "EUR_RLS",
             data.EUR_RLS,
             rial
         );
 
-        showChange(
+        showPrice(
             "pound",
             "GBP_RLS",
             data.GBP_RLS,
             rial
         );
 
-        showChange(
+        showPrice(
             "dirham",
             "AED_RLS",
             data.AED_RLS,
             rial
         );
 
-        showChange(
+        showPrice(
             "lira",
             "TRY_RLS",
             data.TRY_RLS,
@@ -221,18 +224,24 @@ async function updatePrices() {
         );
 
         // بازار جهانی
-        showChange(
+        showPrice(
             "goldOunce",
             "GOLD_OUNCE_USD",
             data.GOLD_OUNCE_USD,
             usd
         );
 
-        showChange(
+        showPrice(
             "silverOunce",
             "SILVER_OUNCE_USD",
             data.SILVER_OUNCE_USD,
             usd
+        );
+
+        // ذخیره قیمت‌های قبلی
+        localStorage.setItem(
+            "previousPrices",
+            JSON.stringify(previousPrices)
         );
 
         updateTime.textContent =
@@ -249,4 +258,3 @@ async function updatePrices() {
 
 // دریافت خودکار هنگام باز شدن سایت
 updatePrices();
-```
