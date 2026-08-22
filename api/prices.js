@@ -1,6 +1,7 @@
 module.exports = async function handler(req, res) {
     try {
-        const apiKey = process.env.OANOR_API_KEY;
+        const apiKey = process.env.OANOR_API_KEY
+            ?.replace(/\s/g, "");
 
         if (!apiKey) {
             return res.status(500).json({
@@ -13,7 +14,7 @@ module.exports = async function handler(req, res) {
             {
                 method: "GET",
                 headers: {
-                    "x-oanor-key": apiKey.trim(),
+                    "x-oanor-key": apiKey,
                     "Accept": "application/json"
                 }
             }
