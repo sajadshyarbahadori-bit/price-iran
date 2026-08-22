@@ -1,4 +1,4 @@
-module.exports = async (req, res) => {
+module.exports = async function handler(req, res) {
     try {
         const apiKey = process.env.OANOR_API_KEY;
 
@@ -8,14 +8,12 @@ module.exports = async (req, res) => {
             });
         }
 
-        const cleanKey = apiKey.trim();
-
         const response = await fetch(
             "https://api.oanor.com/irr-api/v1/gold",
             {
                 method: "GET",
                 headers: {
-                    "x-oanor-key": cleanKey,
+                    "x-oanor-key": apiKey.trim(),
                     "Accept": "application/json"
                 }
             }
@@ -23,13 +21,14 @@ module.exports = async (req, res) => {
 
         const data = await response.text();
 
-        return res
-            .status(response.status)
-            .setHeader("Content-Type", "application/json")
-            .send(data);
+        res.status(response.status);
+        res.setHeader("Content-Type", "application/json");
+        res.setHeader("Cache-Control", "no-store");
+
+        return res.send(data);
 
     } catch (error) {
-        console.error("API ERROR:", error);
+        console.error("OANOR ERROR:", error);
 
         return res.status(500).json({
             error: "API ERROR",
