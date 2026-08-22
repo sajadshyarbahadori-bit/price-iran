@@ -1,41 +1,55 @@
+```javascript
 async function updatePrices() {
     const updateTime = document.getElementById("updateTime");
 
     try {
         updateTime.textContent = "در حال بروزرسانی...";
 
-        const response = await fetch("/api/prices");
+        const response = await fetch("/api/prices", {
+            method: "GET",
+            cache: "no-store"
+        });
+
+        const text = await response.text();
 
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+            throw new Error(`API Error: ${response.status} - ${text}`);
         }
 
-        const prices = await response.json();
+        const prices = JSON.parse(text);
+
+        if (!Array.isArray(prices)) {
+            throw new Error("فرمت پاسخ API آرایه نیست");
+        }
 
         const data = {};
 
         prices.forEach(item => {
-            data[item.code] = item.value;
+            if (item && item.code) {
+                data[item.code] = item.value;
+            }
         });
 
-        // تبدیل ریال به نمایش فارسی
-        const rial = value =>
-            value == null
-                ? "داده موجود نیست"
-                : Math.round(value).toLocaleString("fa-IR") + " ریال";
+        const rial = value => {
+            if (value == null || isNaN(value)) {
+                return "داده موجود نیست";
+            }
 
-        // نمایش قیمت دلاری
-        const usd = value =>
-            value == null
-                ? "داده موجود نیست"
-                : Number(value).toLocaleString("en-US", {
-                    maximumFractionDigits: 4
-                }) + " USD";
+            return Math.round(value).toLocaleString("fa-IR") + " ریال";
+        };
 
-        // =========================
+        const usd = value => {
+            if (value == null || isNaN(value)) {
+                return "داده موجود نیست";
+            }
+
+            return Number(value).toLocaleString("en-US", {
+                maximumFractionDigits: 4
+            }) + " USD";
+        };
+
+
         // طلا
-        // =========================
-
         document.getElementById("gold18").textContent =
             rial(data.GOLD_18_RLS);
 
@@ -45,47 +59,27 @@ async function updatePrices() {
         document.getElementById("mesghal").textContent =
             rial(data.GOLD_MESGHAL_RLS);
 
-        // آبشده و طلای دست دوم
-        document.getElementById("abshodeh").textContent =
-            "داده موجود نیست";
 
-        document.getElementById("secondGold").textContent =
-            "داده موجود نیست";
-
-
-        // =========================
         // نقره
-        // =========================
-
         const silverOunce = data.SILVER_OUNCE_USD;
+        const dollar = data.USD_RLS;
 
-        if (silverOunce != null) {
+        if (silverOunce != null && dollar != null) {
 
-            // هر اونس تروا = 31.1034768 گرم
             const silverGramUSD =
                 silverOunce / 31.1034768;
 
-            // تبدیل تقریبی به ریال با نرخ دلار
-            const silverGramRial =
-                silverGramUSD * data.USD_RLS;
+            const silver999Rial =
+                silverGramUSD * dollar;
 
-            // نقره 999
             document.getElementById("silver999").textContent =
-                rial(silverGramRial);
-
-            // نقره 925
-            const silver925Rial =
-                silverGramRial * 0.925;
+                rial(silver999Rial);
 
             document.getElementById("silver925").textContent =
-                rial(silver925Rial);
-
-            // یک کیلو نقره 999
-            const silverKgRial =
-                silverGramRial * 1000;
+                rial(silver999Rial * 0.925);
 
             document.getElementById("silverKg").textContent =
-                rial(silverKgRial);
+                rial(silver999Rial * 1000);
 
         } else {
 
@@ -100,10 +94,7 @@ async function updatePrices() {
         }
 
 
-        // =========================
         // سکه
-        // =========================
-
         document.getElementById("coin").textContent =
             rial(data.SEKKEH_RLS);
 
@@ -120,10 +111,7 @@ async function updatePrices() {
             rial(data.GERAMI_SEKKEH_RLS);
 
 
-        // =========================
         // ارز
-        // =========================
-
         document.getElementById("dollar").textContent =
             rial(data.USD_RLS);
 
@@ -140,32 +128,22 @@ async function updatePrices() {
             rial(data.TRY_RLS);
 
 
-        // =========================
         // بازار جهانی
-        // =========================
-
         document.getElementById("goldOunce").textContent =
             usd(data.GOLD_OUNCE_USD);
 
         document.getElementById("silverOunce").textContent =
             usd(data.SILVER_OUNCE_USD);
 
-        // DXY فعلاً در API موجود نیست
-        document.getElementById("dxy").textContent =
-            "داده موجود نیست";
 
-
-        // =========================
-        // زمان بروزرسانی
-        // =========================
-
+        // زمان
         updateTime.textContent =
             "آخرین بروزرسانی: " +
             new Date().toLocaleTimeString("fa-IR");
 
     } catch (error) {
 
-        console.error(error);
+        console.error("Price update error:", error);
 
         updateTime.textContent =
             "خطا در دریافت قیمت‌ها";
@@ -175,3 +153,4 @@ async function updatePrices() {
 
 // اجرای اولیه
 updatePrices();
+```
