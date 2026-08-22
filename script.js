@@ -10,15 +10,13 @@ async function updatePrices() {
             cache: "no-store"
         });
 
-        const text = await response.text();
+       const prices = await response.json();
 
         if (!response.ok) {
             throw new Error(`API Error: ${response.status} - ${text}`);
         }
 
-        const prices = JSON.parse(text);
-
-        if (!Array.isArray(prices)) {
+        const prices = await response.json();
             throw new Error("فرمت پاسخ API آرایه نیست");
         }
 
