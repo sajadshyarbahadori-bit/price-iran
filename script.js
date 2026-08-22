@@ -1,10 +1,11 @@
 async function updatePrices() {
     const updateTime = document.getElementById("updateTime");
 
-    try {
-        updateTime.textContent = "در حال دریافت قیمت‌ها...";
+    updateTime.textContent = "در حال دریافت قیمت‌ها...";
 
-        const response = await fetch("/api/prices", {
+    try {
+        const response = await fetch("/api/prices?time=" + Date.now(), {
+            method: "GET",
             cache: "no-store"
         });
 
@@ -14,20 +15,19 @@ async function updatePrices() {
 
         const prices = await response.json();
 
-        console.log("API prices:", prices);
+        console.log("Prices:", prices);
 
-        // اگر API آرایه برگرداند
+        if (!Array.isArray(prices)) {
+            throw new Error("فرمت پاسخ API آرایه نیست");
+        }
+
         const data = {};
 
-        if (Array.isArray(prices)) {
-            for (const item of prices) {
-                if (item && item.code) {
-                    data[item.code] = Number(item.value);
-                }
+        prices.forEach(item => {
+            if (item && item.code != null) {
+                data[String(item.code)] = Number(item.value);
             }
-        } else {
-            throw new Error("فرمت اطلاعات API قابل شناسایی نیست");
-        }
+        });
 
         function rial(value) {
             if (!Number.isFinite(value)) {
@@ -62,11 +62,9 @@ async function updatePrices() {
             Number.isFinite(data.SILVER_OUNCE_USD) &&
             Number.isFinite(data.USD_RLS)
         ) {
-            const silverGramUSD =
-                data.SILVER_OUNCE_USD / 31.1034768;
-
             const silver999 =
-                silverGramUSD * data.USD_RLS;
+                (data.SILVER_OUNCE_USD / 31.1034768) *
+                data.USD_RLS;
 
             document.getElementById("silver999").textContent =
                 rial(silver999);
@@ -76,6 +74,15 @@ async function updatePrices() {
 
             document.getElementById("silverKg").textContent =
                 rial(silver999 * 1000);
+        } else {
+            document.getElementById("silver999").textContent =
+                "داده موجود نیست";
+
+            document.getElementById("silver925").textContent =
+                "داده موجود نیست";
+
+            document.getElementById("silverKg").textContent =
+                "داده موجود نیست";
         }
 
         // سکه
@@ -112,4 +119,22 @@ async function updatePrices() {
 
         // بازار جهانی
         document.getElementById("goldOunce").textContent =
-            usd
+            usd(data.GOLD_OUNCE_USD);
+
+        document.getElementById("silverOunce").textContent =
+            usd(data.SILVER_OUNCE_USD);
+
+        updateTime.textContent =
+            "آخرین بروزرسانی: " +
+            new Date().toLocaleTimeString("fa-IR");
+
+    } catch (error) {
+        console.error("Price update error:", error);
+
+        updateTime.textContent =
+            "خطا در دریافت قیمت‌ها ❌";
+    }
+}
+
+// دریافت خودکار هنگام باز شدن سایت
+updatePrices();
