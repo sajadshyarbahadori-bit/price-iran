@@ -1,11 +1,11 @@
 module.exports = async function handler(req, res) {
     try {
-        const apiKey = process.env.OANOR_API_KEY
+        const apiKey = process.env.SERVIX_API_KEY
             ?.replace(/\s/g, "");
 
         if (!apiKey) {
             return res.status(500).json({
-                error: "OANOR_API_KEY is missing"
+                error: "SERVIX_API_KEY is missing"
             });
         }
 
