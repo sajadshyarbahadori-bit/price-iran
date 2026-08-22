@@ -3,51 +3,58 @@ async function updatePrices() {
     const updateTime = document.getElementById("updateTime");
 
     try {
-        updateTime.textContent = "در حال بروزرسانی...";
+        updateTime.textContent = "در حال دریافت قیمت‌ها...";
 
         const response = await fetch("/api/prices", {
             method: "GET",
             cache: "no-store"
         });
 
-       const prices = await response.json();
-
         if (!response.ok) {
-            throw new Error(`API Error: ${response.status} - ${text}`);
+            throw new Error("API status: " + response.status);
         }
 
         const prices = await response.json();
-            throw new Error("فرمت پاسخ API آرایه نیست");
+
+        console.log("API prices:", prices);
+
+        if (!Array.isArray(prices)) {
+            throw new Error("API response is not an array");
         }
 
+        // تبدیل آرایه API به یک آبجکت بر اساس code
         const data = {};
 
-        prices.forEach(item => {
+        for (const item of prices) {
             if (item && item.code) {
-                data[item.code] = item.value;
+                data[item.code] = Number(item.value);
             }
-        });
+        }
 
-        const rial = value => {
-            if (value == null || isNaN(value)) {
+        // تابع نمایش ریال
+        function rial(value) {
+            if (!Number.isFinite(value)) {
                 return "داده موجود نیست";
             }
 
             return Math.round(value).toLocaleString("fa-IR") + " ریال";
-        };
+        }
 
-        const usd = value => {
-            if (value == null || isNaN(value)) {
+        // تابع نمایش دلار
+        function usd(value) {
+            if (!Number.isFinite(value)) {
                 return "داده موجود نیست";
             }
 
             return Number(value).toLocaleString("en-US", {
                 maximumFractionDigits: 4
             }) + " USD";
-        };
+        }
 
-
+        // =========================
         // طلا
+        // =========================
+
         document.getElementById("gold18").textContent =
             rial(data.GOLD_18_RLS);
 
@@ -58,26 +65,30 @@ async function updatePrices() {
             rial(data.GOLD_MESGHAL_RLS);
 
 
+        // =========================
         // نقره
-        const silverOunce = data.SILVER_OUNCE_USD;
-        const dollar = data.USD_RLS;
+        // =========================
 
-        if (silverOunce != null && dollar != null) {
+        if (
+            Number.isFinite(data.SILVER_OUNCE_USD) &&
+            Number.isFinite(data.USD_RLS)
+        ) {
 
+            // هر اونس تروا = 31.1034768 گرم
             const silverGramUSD =
-                silverOunce / 31.1034768;
+                data.SILVER_OUNCE_USD / 31.1034768;
 
-            const silver999Rial =
-                silverGramUSD * dollar;
+            const silver999 =
+                silverGramUSD * data.USD_RLS;
 
             document.getElementById("silver999").textContent =
-                rial(silver999Rial);
+                rial(silver999);
 
             document.getElementById("silver925").textContent =
-                rial(silver999Rial * 0.925);
+                rial(silver999 * 0.925);
 
             document.getElementById("silverKg").textContent =
-                rial(silver999Rial * 1000);
+                rial(silver999 * 1000);
 
         } else {
 
@@ -92,7 +103,10 @@ async function updatePrices() {
         }
 
 
+        // =========================
         // سکه
+        // =========================
+
         document.getElementById("coin").textContent =
             rial(data.SEKKEH_RLS);
 
@@ -109,7 +123,10 @@ async function updatePrices() {
             rial(data.GERAMI_SEKKEH_RLS);
 
 
+        // =========================
         // ارز
+        // =========================
+
         document.getElementById("dollar").textContent =
             rial(data.USD_RLS);
 
@@ -126,7 +143,10 @@ async function updatePrices() {
             rial(data.TRY_RLS);
 
 
+        // =========================
         // بازار جهانی
+        // =========================
+
         document.getElementById("goldOunce").textContent =
             usd(data.GOLD_OUNCE_USD);
 
@@ -134,7 +154,10 @@ async function updatePrices() {
             usd(data.SILVER_OUNCE_USD);
 
 
-        // زمان
+        // =========================
+        // زمان بروزرسانی
+        // =========================
+
         updateTime.textContent =
             "آخرین بروزرسانی: " +
             new Date().toLocaleTimeString("fa-IR");
@@ -145,10 +168,11 @@ async function updatePrices() {
 
         updateTime.textContent =
             "خطا در دریافت قیمت‌ها";
+
     }
 }
 
 
-// اجرای اولیه
+// اجرای خودکار هنگام باز شدن سایت
 updatePrices();
 ```
