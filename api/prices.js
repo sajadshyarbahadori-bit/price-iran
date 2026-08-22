@@ -1,17 +1,6 @@
-```javascript
-export default function handler(request) {
-    return new Response(
-        JSON.stringify({
-            ok: true,
-            message: "API WORKS"
-        }),
-        {
-            status: 200,
-            headers: {
-                "Content-Type": "application/json"
-            }
-        }
-    );
-}
-```
-
+module.exports = async function handler(req, res) {
+    res.status(200).json({
+        success: true,
+        message: "API WORKS"
+    });
+};
