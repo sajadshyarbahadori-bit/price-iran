@@ -1,5 +1,5 @@
 ```javascript
-export default async function handler(request) {
+module.exports = async function handler(req, res) {
     const controller = new AbortController();
 
     const timeout = setTimeout(() => {
@@ -21,32 +21,25 @@ export default async function handler(request) {
 
         const data = await response.text();
 
-        return new Response(data, {
-            status: response.status,
-            headers: {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*"
-            }
-        });
+        res.status(response.status);
+        res.setHeader("Content-Type", "application/json");
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.end(data);
 
     } catch (error) {
-        return new Response(
-            JSON.stringify({
-                error: "Oanor API did not respond",
-                message: error.name === "AbortError"
-                    ? "Request timed out"
-                    : error.message
-            }),
-            {
-                status: 504,
-                headers: {
-                    "Content-Type": "application/json",
-                    "Access-Control-Allow-Origin": "*"
-                }
-            }
-        );
+        res.status(504);
+        res.setHeader("Content-Type", "application/json");
+        res.setHeader("Access-Control-Allow-Origin", "*");
+
+        res.end(JSON.stringify({
+            error: "Oanor API did not respond",
+            message: error.name === "AbortError"
+                ? "Request timed out"
+                : error.message
+        }));
+
     } finally {
         clearTimeout(timeout);
     }
-}
+};
 ```
