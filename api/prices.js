@@ -1,10 +1,10 @@
 export default async function handler(request) {
     try {
         const response = await fetch(
-            "https://api.oanor.com/irr-api/v1/gold",
+            "https://servix.cc/api/v1/assets?codes=USD_RLS,GOLD_18_RLS",
             {
                 headers: {
-                    "x-oanor-key": process.env.OANOR_API_KEY
+                    "X-API-Key": process.env.SERVIX_API_KEY
                 }
             }
         );
@@ -14,22 +14,15 @@ export default async function handler(request) {
         return new Response(data, {
             status: response.status,
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*"
             }
         });
 
     } catch (error) {
         return new Response(
-            JSON.stringify({
-                error: "API connection failed",
-                message: error.message
-            }),
-            {
-                status: 500,
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            }
+            JSON.stringify({ error: error.message }),
+            { status: 500 }
         );
     }
 }
