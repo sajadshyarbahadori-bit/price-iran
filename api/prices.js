@@ -1,10 +1,21 @@
 module.exports = async (req, res) => {
     try {
+        const apiKey = process.env.OANOR_API_KEY;
+
+        if (!apiKey) {
+            return res.status(500).json({
+                error: "OANOR_API_KEY is missing"
+            });
+        }
+
+        const cleanKey = apiKey.trim();
+
         const response = await fetch(
             "https://api.oanor.com/irr-api/v1/gold",
             {
+                method: "GET",
                 headers: {
-                    "x-oanor-key": process.env.OANOR_API_KEY,
+                    "x-oanor-key": cleanKey,
                     "Accept": "application/json"
                 }
             }
@@ -12,16 +23,15 @@ module.exports = async (req, res) => {
 
         const data = await response.text();
 
-        res.status(response.status);
-        res.setHeader("Content-Type", "application/json");
-        res.setHeader("Access-Control-Allow-Origin", "*");
-
-        res.send(data);
+        return res
+            .status(response.status)
+            .setHeader("Content-Type", "application/json")
+            .send(data);
 
     } catch (error) {
-        console.error(error);
+        console.error("API ERROR:", error);
 
-        res.status(500).json({
+        return res.status(500).json({
             error: "API ERROR",
             message: error.message
         });
