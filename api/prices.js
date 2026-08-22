@@ -1,7 +1,6 @@
 module.exports = async function handler(req, res) {
     try {
-        const apiKey = process.env.SERVIX_API_KEY
-            ?.replace(/\s/g, "");
+        const apiKey = process.env.SERVIX_API_KEY?.replace(/\s/g, "");
 
         if (!apiKey) {
             return res.status(500).json({
@@ -10,11 +9,11 @@ module.exports = async function handler(req, res) {
         }
 
         const response = await fetch(
-            "https://api.oanor.com/irr-api/v1/gold",
+            "https://servix.cc/api/v1/assets",
             {
                 method: "GET",
                 headers: {
-                    "x-oanor-key": apiKey,
+                    "X-API-Key": apiKey,
                     "Accept": "application/json"
                 }
             }
@@ -29,7 +28,7 @@ module.exports = async function handler(req, res) {
         return res.send(data);
 
     } catch (error) {
-        console.error("OANOR ERROR:", error);
+        console.error("SERVIX ERROR:", error);
 
         return res.status(500).json({
             error: "API ERROR",
