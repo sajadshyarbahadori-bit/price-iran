@@ -1,21 +1,13 @@
 ```javascript
 export default async function handler(request) {
-    const controller = new AbortController();
-
-    const timeout = setTimeout(() => {
-        controller.abort();
-    }, 8000);
-
     try {
         const response = await fetch(
-            "https://api.oanor.com/irr-api/v1/assets",
+            "https://api.oanor.com/irr-api/v1/gold",
             {
-                method: "GET",
                 headers: {
                     "x-oanor-key": process.env.OANOR_API_KEY,
                     "Accept": "application/json"
-                },
-                signal: controller.signal
+                }
             }
         );
 
@@ -32,21 +24,16 @@ export default async function handler(request) {
     } catch (error) {
         return new Response(
             JSON.stringify({
-                error: "Oanor API did not respond",
-                message: error.name === "AbortError"
-                    ? "Request timed out"
-                    : error.message
+                error: "API request failed",
+                message: error.message
             }),
             {
-                status: 504,
+                status: 500,
                 headers: {
-                    "Content-Type": "application/json",
-                    "Access-Control-Allow-Origin": "*"
+                    "Content-Type": "application/json"
                 }
             }
         );
-    } finally {
-        clearTimeout(timeout);
     }
 }
 ```
