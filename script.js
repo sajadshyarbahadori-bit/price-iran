@@ -1,3 +1,6 @@
+```js
+let previousPrices = {};
+
 async function updatePrices() {
     const updateTime = document.getElementById("updateTime");
 
@@ -47,15 +50,63 @@ async function updatePrices() {
             }) + " USD";
         }
 
+        function showChange(id, key, value, formatter) {
+            const element = document.getElementById(id);
+
+            if (!element) return;
+
+            element.textContent = formatter(value);
+
+            if (!Number.isFinite(value)) return;
+
+            if (previousPrices[key] !== undefined) {
+                const oldValue = previousPrices[key];
+
+                if (oldValue !== 0) {
+                    const changePercent =
+                        ((value - oldValue) / oldValue) * 100;
+
+                    let changeText = "";
+
+                    if (changePercent > 0) {
+                        changeText =
+                            ` ↑ ${changePercent.toFixed(2)}٪ افزایش`;
+                    } else if (changePercent < 0) {
+                        changeText =
+                            ` ↓ ${Math.abs(changePercent).toFixed(2)}٪ کاهش`;
+                    } else {
+                        changeText = " ـ بدون تغییر";
+                    }
+
+                    element.textContent =
+                        formatter(value) + changeText;
+                }
+            }
+
+            previousPrices[key] = value;
+        }
+
         // طلا
-        document.getElementById("gold18").textContent =
-            rial(data.GOLD_18_RLS);
+        showChange(
+            "gold18",
+            "GOLD_18_RLS",
+            data.GOLD_18_RLS,
+            rial
+        );
 
-        document.getElementById("gold24").textContent =
-            rial(data.GOLD_24_RLS);
+        showChange(
+            "gold24",
+            "GOLD_24_RLS",
+            data.GOLD_24_RLS,
+            rial
+        );
 
-        document.getElementById("mesghal").textContent =
-            rial(data.GOLD_MESGHAL_RLS);
+        showChange(
+            "mesghal",
+            "GOLD_MESGHAL_RLS",
+            data.GOLD_MESGHAL_RLS,
+            rial
+        );
 
         // نقره
         if (
@@ -66,14 +117,26 @@ async function updatePrices() {
                 (data.SILVER_OUNCE_USD / 31.1034768) *
                 data.USD_RLS;
 
-            document.getElementById("silver999").textContent =
-                rial(silver999);
+            showChange(
+                "silver999",
+                "SILVER_999",
+                silver999,
+                rial
+            );
 
-            document.getElementById("silver925").textContent =
-                rial(silver999 * 0.925);
+            showChange(
+                "silver925",
+                "SILVER_925",
+                silver999 * 0.925,
+                rial
+            );
 
-            document.getElementById("silverKg").textContent =
-                rial(silver999 * 1000);
+            showChange(
+                "silverKg",
+                "SILVER_KG",
+                silver999 * 1000,
+                rial
+            );
         } else {
             document.getElementById("silver999").textContent =
                 "داده موجود نیست";
@@ -86,43 +149,91 @@ async function updatePrices() {
         }
 
         // سکه
-        document.getElementById("coin").textContent =
-            rial(data.SEKKEH_RLS);
+        showChange(
+            "coin",
+            "SEKKEH_RLS",
+            data.SEKKEH_RLS,
+            rial
+        );
 
-        document.getElementById("bahar").textContent =
-            rial(data.BAHAR_RLS);
+        showChange(
+            "bahar",
+            "BAHAR_RLS",
+            data.BAHAR_RLS,
+            rial
+        );
 
-        document.getElementById("halfCoin").textContent =
-            rial(data.NIM_SEKKEH_RLS);
+        showChange(
+            "halfCoin",
+            "NIM_SEKKEH_RLS",
+            data.NIM_SEKKEH_RLS,
+            rial
+        );
 
-        document.getElementById("quarterCoin").textContent =
-            rial(data.ROB_SEKKEH_RLS);
+        showChange(
+            "quarterCoin",
+            "ROB_SEKKEH_RLS",
+            data.ROB_SEKKEH_RLS,
+            rial
+        );
 
-        document.getElementById("gramCoin").textContent =
-            rial(data.GERAMI_SEKKEH_RLS);
+        showChange(
+            "gramCoin",
+            "GERAMI_SEKKEH_RLS",
+            data.GERAMI_SEKKEH_RLS,
+            rial
+        );
 
         // ارز
-        document.getElementById("dollar").textContent =
-            rial(data.USD_RLS);
+        showChange(
+            "dollar",
+            "USD_RLS",
+            data.USD_RLS,
+            rial
+        );
 
-        document.getElementById("euro").textContent =
-            rial(data.EUR_RLS);
+        showChange(
+            "euro",
+            "EUR_RLS",
+            data.EUR_RLS,
+            rial
+        );
 
-        document.getElementById("pound").textContent =
-            rial(data.GBP_RLS);
+        showChange(
+            "pound",
+            "GBP_RLS",
+            data.GBP_RLS,
+            rial
+        );
 
-        document.getElementById("dirham").textContent =
-            rial(data.AED_RLS);
+        showChange(
+            "dirham",
+            "AED_RLS",
+            data.AED_RLS,
+            rial
+        );
 
-        document.getElementById("lira").textContent =
-            rial(data.TRY_RLS);
+        showChange(
+            "lira",
+            "TRY_RLS",
+            data.TRY_RLS,
+            rial
+        );
 
         // بازار جهانی
-        document.getElementById("goldOunce").textContent =
-            usd(data.GOLD_OUNCE_USD);
+        showChange(
+            "goldOunce",
+            "GOLD_OUNCE_USD",
+            data.GOLD_OUNCE_USD,
+            usd
+        );
 
-        document.getElementById("silverOunce").textContent =
-            usd(data.SILVER_OUNCE_USD);
+        showChange(
+            "silverOunce",
+            "SILVER_OUNCE_USD",
+            data.SILVER_OUNCE_USD,
+            usd
+        );
 
         updateTime.textContent =
             "آخرین بروزرسانی: " +
@@ -138,3 +249,4 @@ async function updatePrices() {
 
 // دریافت خودکار هنگام باز شدن سایت
 updatePrices();
+```
