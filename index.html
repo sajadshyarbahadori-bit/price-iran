@@ -1,206 +1,260 @@
-```html
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
+let previousPrices = JSON.parse(
+    localStorage.getItem("previousPrices") || "{}"
+);
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بازار ایران | طلا، نقره و ارز</title>
+async function updatePrices() {
+    const updateTime = document.getElementById("updateTime");
 
-    <link rel="stylesheet" href="style.css">
-</head>
+    updateTime.textContent = "در حال دریافت قیمت‌ها...";
 
-<body>
+    try {
+        const response = await fetch("/api/prices?time=" + Date.now(), {
+            method: "GET",
+            cache: "no-store"
+        });
 
-<div class="container">
+        if (!response.ok) {
+            throw new Error("API status: " + response.status);
+        }
 
-    <header>
-        <h1>📊 بازار ایران | طلا، نقره و ارز</h1>
-        <p>قیمت طلا، نقره، سکه و ارز</p>
-    </header>
+        const prices = await response.json();
 
+        if (!Array.isArray(prices)) {
+            throw new Error("فرمت پاسخ API آرایه نیست");
+        }
 
-    <!-- طلا -->
-    <section>
-        <h2>🥇 طلا</h2>
+        const data = {};
 
-        <div class="cards">
+        prices.forEach(item => {
+            if (item && item.code != null) {
+                data[String(item.code)] = Number(item.value);
+            }
+        });
 
-            <div class="card">
-                <span>طلای ۱۸ عیار</span>
-                <h3 id="gold18">قیمت نمونه</h3>
-                <small>قیمت بازار</small>
-            </div>
+        function rial(value) {
+            if (!Number.isFinite(value)) {
+                return "داده موجود نیست";
+            }
 
-            <div class="card">
-                <span>طلای ۲۴ عیار</span>
-                <h3 id="gold24">قیمت نمونه</h3>
-                <small>قیمت بازار</small>
-            </div>
+            return Math.round(value).toLocaleString("fa-IR") + " ریال";
+        }
 
-            <div class="card">
-                <span>مثقال طلا</span>
-                <h3 id="mesghal">قیمت نمونه</h3>
-                <small>قیمت بازار</small>
-            </div>
+        function usd(value) {
+            if (!Number.isFinite(value)) {
+                return "داده موجود نیست";
+            }
 
-        </div>
-    </section>
+            return Number(value).toLocaleString("en-US", {
+                maximumFractionDigits: 4
+            }) + " USD";
+        }
 
+        function showPrice(id, key, value, formatter) {
+            const element = document.getElementById(id);
 
-    <!-- نقره -->
-    <section>
-        <h2>⚪ نقره</h2>
+            if (!element) return;
 
-        <div class="cards">
+            if (!Number.isFinite(value)) {
+                element.textContent = "داده موجود نیست";
+                return;
+            }
 
-            <div class="card">
-                <span>نقره ۹۹۹</span>
-                <h3 id="silver999">قیمت نمونه</h3>
-                <small>هر گرم</small>
-            </div>
+            let change = "";
 
-            <div class="card">
-                <span>نقره ۹۲۵</span>
-                <h3 id="silver925">قیمت نمونه</h3>
-                <small>هر گرم</small>
-            </div>
+            if (
+                previousPrices[key] !== undefined &&
+                Number.isFinite(previousPrices[key])
+            ) {
+                const oldValue = previousPrices[key];
 
-            <div class="card">
-                <span>نقره یک کیلو</span>
-                <h3 id="silverKg">قیمت نمونه</h3>
-                <small>قیمت بازار</small>
-            </div>
+                if (value > oldValue) {
+                    const percent =
+                        ((value - oldValue) / oldValue) * 100;
 
-        </div>
-    </section>
+                    change =
+                        ` ↑ ${percent.toFixed(2)}٪ افزایش`;
+                } else if (value < oldValue) {
+                    const percent =
+                        ((oldValue - value) / oldValue) * 100;
 
+                    change =
+                        ` ↓ ${percent.toFixed(2)}٪ کاهش`;
+                } else {
+                    change = " ـ بدون تغییر";
+                }
+            }
 
-    <!-- سکه -->
-    <section>
-        <h2>🪙 سکه</h2>
+            element.textContent = formatter(value) + change;
 
-        <div class="cards">
+            previousPrices[key] = value;
+        }
 
-            <div class="card">
-                <span>سکه امامی</span>
-                <h3 id="coin">قیمت نمونه</h3>
-                <small>قیمت بازار</small>
-            </div>
+        // طلا
+        showPrice(
+            "gold18",
+            "GOLD_18_RLS",
+            data.GOLD_18_RLS,
+            rial
+        );
 
-            <div class="card">
-                <span>بهار آزادی</span>
-                <h3 id="bahar">قیمت نمونه</h3>
-                <small>قیمت بازار</small>
-            </div>
+        showPrice(
+            "gold24",
+            "GOLD_24_RLS",
+            data.GOLD_24_RLS,
+            rial
+        );
 
-            <div class="card">
-                <span>نیم‌سکه</span>
-                <h3 id="halfCoin">قیمت نمونه</h3>
-                <small>قیمت بازار</small>
-            </div>
+        showPrice(
+            "mesghal",
+            "GOLD_MESGHAL_RLS",
+            data.GOLD_MESGHAL_RLS,
+            rial
+        );
 
-            <div class="card">
-                <span>ربع‌سکه</span>
-                <h3 id="quarterCoin">قیمت نمونه</h3>
-                <small>قیمت بازار</small>
-            </div>
+        // نقره
+        if (
+            Number.isFinite(data.SILVER_OUNCE_USD) &&
+            Number.isFinite(data.USD_RLS)
+        ) {
+            const silver999 =
+                (data.SILVER_OUNCE_USD / 31.1034768) *
+                data.USD_RLS;
 
-            <div class="card">
-                <span>سکه گرمی</span>
-                <h3 id="gramCoin">قیمت نمونه</h3>
-                <small>قیمت بازار</small>
-            </div>
+            showPrice(
+                "silver999",
+                "SILVER_999",
+                silver999,
+                rial
+            );
 
-        </div>
-    </section>
+            showPrice(
+                "silver925",
+                "SILVER_925",
+                silver999 * 0.925,
+                rial
+            );
 
+            showPrice(
+                "silverKg",
+                "SILVER_KG",
+                silver999 * 1000,
+                rial
+            );
+        } else {
+            document.getElementById("silver999").textContent =
+                "داده موجود نیست";
 
-    <!-- ارز -->
-    <section>
-        <h2>💵 ارز</h2>
+            document.getElementById("silver925").textContent =
+                "داده موجود نیست";
 
-        <div class="cards">
+            document.getElementById("silverKg").textContent =
+                "داده موجود نیست";
+        }
 
-            <div class="card">
-                <span>دلار آمریکا</span>
-                <h3 id="dollar">قیمت نمونه</h3>
-                <small>قیمت بازار</small>
-            </div>
+        // سکه
+        showPrice(
+            "coin",
+            "SEKKEH_RLS",
+            data.SEKKEH_RLS,
+            rial
+        );
 
-            <div class="card">
-                <span>یورو</span>
-                <h3 id="euro">قیمت نمونه</h3>
-                <small>قیمت بازار</small>
-            </div>
+        showPrice(
+            "bahar",
+            "BAHAR_RLS",
+            data.BAHAR_RLS,
+            rial
+        );
 
-            <div class="card">
-                <span>پوند انگلیس</span>
-                <h3 id="pound">قیمت نمونه</h3>
-                <small>قیمت بازار</small>
-            </div>
+        showPrice(
+            "halfCoin",
+            "NIM_SEKKEH_RLS",
+            data.NIM_SEKKEH_RLS,
+            rial
+        );
 
-            <div class="card">
-                <span>درهم امارات</span>
-                <h3 id="dirham">قیمت نمونه</h3>
-                <small>قیمت بازار</small>
-            </div>
+        showPrice(
+            "quarterCoin",
+            "ROB_SEKKEH_RLS",
+            data.ROB_SEKKEH_RLS,
+            rial
+        );
 
-            <div class="card">
-                <span>لیر ترکیه</span>
-                <h3 id="lira">قیمت نمونه</h3>
-                <small>قیمت بازار</small>
-            </div>
+        showPrice(
+            "gramCoin",
+            "GERAMI_SEKKEH_RLS",
+            data.GERAMI_SEKKEH_RLS,
+            rial
+        );
 
-        </div>
-    </section>
+        // ارز
+        showPrice(
+            "dollar",
+            "USD_RLS",
+            data.USD_RLS,
+            rial
+        );
 
+        showPrice(
+            "euro",
+            "EUR_RLS",
+            data.EUR_RLS,
+            rial
+        );
 
-    <!-- بازار جهانی -->
-    <section>
-        <h2>🌍 بازار جهانی</h2>
+        showPrice(
+            "pound",
+            "GBP_RLS",
+            data.GBP_RLS,
+            rial
+        );
 
-        <div class="cards">
+        showPrice(
+            "dirham",
+            "AED_RLS",
+            data.AED_RLS,
+            rial
+        );
 
-            <div class="card">
-                <span>اونس طلا</span>
-                <h3 id="goldOunce">قیمت نمونه</h3>
-                <small>USD</small>
-            </div>
+        showPrice(
+            "lira",
+            "TRY_RLS",
+            data.TRY_RLS,
+            rial
+        );
 
-            <div class="card">
-                <span>اونس نقره</span>
-                <h3 id="silverOunce">قیمت نمونه</h3>
-                <small>USD</small>
-            </div>
+        // بازار جهانی
+        showPrice(
+            "goldOunce",
+            "GOLD_OUNCE_USD",
+            data.GOLD_OUNCE_USD,
+            usd
+        );
 
-        </div>
-    </section>
+        showPrice(
+            "silverOunce",
+            "SILVER_OUNCE_USD",
+            data.SILVER_OUNCE_USD,
+            usd
+        );
 
+        // ذخیره قیمت‌های قبلی
+        localStorage.setItem(
+            "previousPrices",
+            JSON.stringify(previousPrices)
+        );
 
-    <!-- بروزرسانی -->
-    <div class="update-box">
+        updateTime.textContent =
+            "آخرین بروزرسانی: " +
+            new Date().toLocaleTimeString("fa-IR");
 
-        <button onclick="updatePrices()">
-            🔄 بروزرسانی
-        </button>
+    } catch (error) {
+        console.error("Price update error:", error);
 
-        <p id="updateTime">
-            آخرین بروزرسانی هنوز انجام نشده
-        </p>
+        updateTime.textContent =
+            "خطا در دریافت قیمت‌ها ❌";
+    }
+}
 
-    </div>
-
-
-    <footer>
-        بازار ایران | طلا، نقره و ارز
-    </footer>
-
-</div>
-
-
-<script src="script.js"></script>
-
-</body>
-</html>
-```
+// دریافت خودکار هنگام باز شدن سایت
+updatePrices();
