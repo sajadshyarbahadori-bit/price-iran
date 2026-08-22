@@ -4,8 +4,9 @@ export default async function handler(request) {
 
     try {
         const response = await fetch(
-            "https://servix.cc/api/v1/assets?codes=USD_RLS,EUR_RLS,GOLD_18_RLS",
+            "https://servix.cc/api/v1/assets",
             {
+                method: "GET",
                 headers: {
                     "X-API-Key": process.env.SERVIX_API_KEY,
                     "Accept": "application/json"
@@ -14,9 +15,9 @@ export default async function handler(request) {
             }
         );
 
-        const data = await response.text();
+        const text = await response.text();
 
-        return new Response(data, {
+        return new Response(text, {
             status: response.status,
             headers: {
                 "Content-Type": "application/json",
