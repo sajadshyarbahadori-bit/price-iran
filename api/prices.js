@@ -28,13 +28,23 @@ export default async function handler(req, res) {
             data = JSON.parse(text);
         } catch {
             return res.status(502).json({
-                error: "INVALID_SERVIX_RESPONSE"
+                error: "INVALID_SERVIX_RESPONSE",
+                raw: text
             });
         }
 
-        if (!response.ok || !Array.isArray(data)) {
+        if (!response.ok) {
+            console.error("SERVIX API ERROR:", data);
+
             return res.status(response.status || 502).json({
                 error: "SERVIX_API_ERROR",
+                response: data
+            });
+        }
+
+        if (!Array.isArray(data)) {
+            return res.status(502).json({
+                error: "SERVIX_RESPONSE_NOT_ARRAY",
                 response: data
             });
         }
@@ -43,8 +53,9 @@ export default async function handler(req, res) {
             code: item.code,
             name: item.name || item.code,
             value: Number(item.value),
-            businessTime: item.businessTime,
-            labelFa: item.labelFa
+            labelFa: item.labelFa,
+            labelEn: item.labelEn,
+            businessTime: item.businessTime
         }));
 
         res.setHeader(
@@ -55,7 +66,8 @@ export default async function handler(req, res) {
         return res.status(200).json(prices);
 
     } catch (error) {
-        console.error("SERVIX ERROR:", error);
+
+        console.error("SERVIX CONNECTION ERROR:", error);
 
         return res.status(500).json({
             error: "SERVIX_CONNECTION_ERROR",
