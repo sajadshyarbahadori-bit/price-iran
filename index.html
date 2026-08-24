@@ -5,42 +5,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>بازار ایران PRO | قیمت لحظه‌ای</title>
+    <title>بازار ایران | طلا، نقره و ارز</title>
 
     <link rel="stylesheet" href="style.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
 
 <div class="container">
 
+
     <!-- ================= HEADER ================= -->
 
     <header class="hero">
 
-        <div class="hero-info">
+        <div>
 
             <div class="live-badge">
                 <span class="live-dot"></span>
                 بازار زنده
             </div>
 
-            <h1>📊 بازار ایران <span>PRO</span></h1>
+            <h1>
+                📊 بازار ایران
+                <span>| طلا، نقره و ارز</span>
+            </h1>
 
             <p>
-                طلا، سکه، نقره، ارز و بازار جهانی
+                قیمت لحظه‌ای طلا، نقره، سکه و ارز
             </p>
 
         </div>
 
+
         <div class="hero-actions">
 
-            <button id="themeButton" class="icon-button">
-                🌙
-            </button>
-
-            <button id="refreshTop" class="icon-button">
-                🔄
+            <button
+                id="themeButton"
+                class="icon-button"
+                title="تغییر حالت روز و شب"
+            >
+                ☀️
             </button>
 
         </div>
@@ -48,19 +56,19 @@
     </header>
 
 
-    <!-- ================= STATUS ================= -->
 
-    <section class="market-status-panel">
+    <!-- ================= DASHBOARD ================= -->
 
-        <div class="status-header">
+    <section>
+
+        <div class="section-title">
 
             <div>
-                <h2>🚦 وضعیت بازار</h2>
-                <p>تحلیل لحظه‌ای بر اساس قیمت‌های دریافتی</p>
-            </div>
+                <h2>⚡ داشبورد بازار</h2>
 
-            <div id="marketStatus" class="status-badge">
-                در حال بررسی...
+                <p>
+                    وضعیت سریع مهم‌ترین بازارها
+                </p>
             </div>
 
         </div>
@@ -68,33 +76,713 @@
 
         <div class="dashboard-grid">
 
-            <div class="dashboard-card">
-                <span>🥇 طلای ۱۸</span>
-                <strong id="dashboardGold">---</strong>
-                <small id="dashboardGoldChange">---</small>
-            </div>
 
             <div class="dashboard-card">
+
+                <span>🥇 طلای ۱۸ عیار</span>
+
+                <strong id="dashboardGold">
+                    ---
+                </strong>
+
+                <small id="dashboardGoldChange">
+                    ---
+                </small>
+
+            </div>
+
+
+            <div class="dashboard-card">
+
                 <span>💵 دلار</span>
-                <strong id="dashboardDollar">---</strong>
-                <small id="dashboardDollarChange">---</small>
+
+                <strong id="dashboardDollar">
+                    ---
+                </strong>
+
+                <small id="dashboardDollarChange">
+                    ---
+                </small>
+
             </div>
 
+
             <div class="dashboard-card">
+
                 <span>🪙 سکه امامی</span>
-                <strong id="dashboardCoin">---</strong>
-                <small id="dashboardCoinChange">---</small>
+
+                <strong id="dashboardCoin">
+                    ---
+                </strong>
+
+                <small id="dashboardCoinChange">
+                    ---
+                </small>
+
             </div>
 
+
             <div class="dashboard-card">
-                <span>⚪ نقره</span>
-                <strong id="dashboardSilver">---</strong>
-                <small id="dashboardSilverChange">---</small>
+
+                <span>⚪ نقره ۹۹۹</span>
+
+                <strong id="dashboardSilver">
+                    ---
+                </strong>
+
+                <small id="dashboardSilverChange">
+                    ---
+                </small>
+
             </div>
 
         </div>
 
     </section>
+
+
+
+    <!-- ================= MARKET STATUS ================= -->
+
+    <section>
+
+        <div class="market-status-panel">
+
+            <div class="status-header">
+
+                <div>
+
+                    <h2>📈 وضعیت بازار</h2>
+
+                    <p>
+                        بررسی سریع روند کلی بازار
+                    </p>
+
+                </div>
+
+                <div
+                    id="marketStatus"
+                    class="status-badge neutral"
+                >
+                    🟡 در انتظار اطلاعات
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ================= SEARCH ================= -->
+
+    <section>
+
+        <div class="section-title">
+
+            <div>
+                <h2>🔎 جستجوی بازار</h2>
+
+                <p>
+                    دارایی موردنظر خود را پیدا کنید
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="search-box">
+
+            🔍
+
+            <input
+                id="assetSearch"
+                type="text"
+                placeholder="مثلاً طلا، دلار، سکه..."
+            >
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ================= GOLD ================= -->
+
+    <section>
+
+        <div class="section-title">
+
+            <div>
+                <h2>🥇 طلا</h2>
+
+                <p>
+                    قیمت لحظه‌ای طلا
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="cards">
+
+
+            <div
+                class="card asset-card bubble-card"
+                data-name="طلای ۱۸ عیار"
+            >
+
+                <button
+                    class="favorite-button"
+                    data-favorite="gold18"
+                >
+                    ☆
+                </button>
+
+                <span>
+                    طلای ۱۸ عیار
+                </span>
+
+                <h3 id="gold18">
+                    قیمت نمونه
+                </h3>
+
+                <small>
+                    قیمت بازار
+                </small>
+
+                <br>
+
+                <button
+                    class="copy-price"
+                    data-copy="gold18"
+                >
+                    📋 کپی قیمت
+                </button>
+
+            </div>
+
+
+            <div
+                class="card asset-card"
+                data-name="طلای ۲۴ عیار"
+            >
+
+                <button
+                    class="favorite-button"
+                    data-favorite="gold24"
+                >
+                    ☆
+                </button>
+
+                <span>
+                    طلای ۲۴ عیار
+                </span>
+
+                <h3 id="gold24">
+                    قیمت نمونه
+                </h3>
+
+                <small>
+                    قیمت بازار
+                </small>
+
+            </div>
+
+
+            <div
+                class="card asset-card"
+                data-name="مثقال طلا"
+            >
+
+                <button
+                    class="favorite-button"
+                    data-favorite="mesghal"
+                >
+                    ☆
+                </button>
+
+                <span>
+                    مثقال طلا
+                </span>
+
+                <h3 id="mesghal">
+                    قیمت نمونه
+                </h3>
+
+                <small>
+                    قیمت بازار
+                </small>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ================= GOLD BUBBLE ================= -->
+
+    <section>
+
+        <div class="section-title">
+
+            <div>
+                <h2>🫧 حباب طلا</h2>
+
+                <p>
+                    مقایسه قیمت بازار با قیمت محاسباتی تقریبی
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="cards">
+
+
+            <div class="card">
+
+                <span>
+                    قیمت محاسباتی طلای ۱۸
+                </span>
+
+                <h3 id="gold18Calculated">
+                    ---
+                </h3>
+
+                <small>
+                    بر اساس اونس جهانی و دلار
+                </small>
+
+            </div>
+
+
+            <div class="card">
+
+                <span>
+                    مقدار حباب
+                </span>
+
+                <h3 id="gold18Bubble">
+                    ---
+                </h3>
+
+                <small>
+                    اختلاف با قیمت محاسباتی
+                </small>
+
+            </div>
+
+
+            <div class="card">
+
+                <span>
+                    درصد حباب
+                </span>
+
+                <h3 id="gold18BubblePercent">
+                    ---
+                </h3>
+
+                <small>
+                    درصد تقریبی
+                </small>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ================= SILVER ================= -->
+
+    <section>
+
+        <div class="section-title">
+
+            <div>
+                <h2>⚪ نقره</h2>
+
+                <p>
+                    قیمت تقریبی بر اساس اونس جهانی و دلار
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="cards">
+
+
+            <div
+                class="card asset-card"
+                data-name="نقره ۹۹۹"
+            >
+
+                <button
+                    class="favorite-button"
+                    data-favorite="silver999"
+                >
+                    ☆
+                </button>
+
+                <span>
+                    نقره ۹۹۹
+                </span>
+
+                <h3 id="silver999">
+                    قیمت نمونه
+                </h3>
+
+                <small>
+                    هر گرم
+                </small>
+
+            </div>
+
+
+            <div
+                class="card asset-card"
+                data-name="نقره ۹۲۵"
+            >
+
+                <span>
+                    نقره ۹۲۵
+                </span>
+
+                <h3 id="silver925">
+                    قیمت نمونه
+                </h3>
+
+                <small>
+                    هر گرم
+                </small>
+
+            </div>
+
+
+            <div
+                class="card asset-card"
+                data-name="نقره یک کیلو"
+            >
+
+                <span>
+                    نقره یک کیلو
+                </span>
+
+                <h3 id="silverKg">
+                    قیمت نمونه
+                </h3>
+
+                <small>
+                    قیمت بازار
+                </small>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ================= COINS ================= -->
+
+    <section>
+
+        <div class="section-title">
+
+            <div>
+                <h2>🪙 سکه</h2>
+
+                <p>
+                    قیمت انواع سکه
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="cards">
+
+
+            <div
+                class="card asset-card"
+                data-name="سکه امامی"
+            >
+
+                <span>
+                    سکه امامی
+                </span>
+
+                <h3 id="coin">
+                    قیمت نمونه
+                </h3>
+
+                <small>
+                    قیمت بازار
+                </small>
+
+            </div>
+
+
+            <div
+                class="card asset-card"
+                data-name="بهار آزادی"
+            >
+
+                <span>
+                    بهار آزادی
+                </span>
+
+                <h3 id="bahar">
+                    قیمت نمونه
+                </h3>
+
+                <small>
+                    قیمت بازار
+                </small>
+
+            </div>
+
+
+            <div
+                class="card asset-card"
+                data-name="نیم سکه"
+            >
+
+                <span>
+                    نیم‌سکه
+                </span>
+
+                <h3 id="halfCoin">
+                    قیمت نمونه
+                </h3>
+
+                <small>
+                    قیمت بازار
+                </small>
+
+            </div>
+
+
+            <div
+                class="card asset-card"
+                data-name="ربع سکه"
+            >
+
+                <span>
+                    ربع‌سکه
+                </span>
+
+                <h3 id="quarterCoin">
+                    قیمت نمونه
+                </h3>
+
+                <small>
+                    قیمت بازار
+                </small>
+
+            </div>
+
+
+            <div
+                class="card asset-card"
+                data-name="سکه گرمی"
+            >
+
+                <span>
+                    سکه گرمی
+                </span>
+
+                <h3 id="gramCoin">
+                    قیمت نمونه
+                </h3>
+
+                <small>
+                    قیمت بازار
+                </small>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ================= CURRENCY ================= -->
+
+    <section>
+
+        <div class="section-title">
+
+            <div>
+                <h2>💵 ارز</h2>
+
+                <p>
+                    قیمت ارزهای مهم
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="cards">
+
+
+            <div class="card asset-card" data-name="دلار">
+
+                <span>
+                    دلار آمریکا
+                </span>
+
+                <h3 id="dollar">
+                    قیمت نمونه
+                </h3>
+
+                <small>
+                    قیمت بازار
+                </small>
+
+            </div>
+
+
+            <div class="card asset-card" data-name="یورو">
+
+                <span>
+                    یورو
+                </span>
+
+                <h3 id="euro">
+                    قیمت نمونه
+                </h3>
+
+                <small>
+                    قیمت بازار
+                </small>
+
+            </div>
+
+
+            <div class="card asset-card" data-name="پوند">
+
+                <span>
+                    پوند انگلیس
+                </span>
+
+                <h3 id="pound">
+                    قیمت نمونه
+                </h3>
+
+                <small>
+                    قیمت بازار
+                </small>
+
+            </div>
+
+
+            <div class="card asset-card" data-name="درهم">
+
+                <span>
+                    درهم امارات
+                </span>
+
+                <h3 id="dirham">
+                    قیمت نمونه
+                </h3>
+
+                <small>
+                    قیمت بازار
+                </small>
+
+            </div>
+
+
+            <div class="card asset-card" data-name="لیر">
+
+                <span>
+                    لیر ترکیه
+                </span>
+
+                <h3 id="lira">
+                    قیمت نمونه
+                </h3>
+
+                <small>
+                    قیمت بازار
+                </small>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ================= GLOBAL ================= -->
+
+    <section>
+
+        <div class="section-title">
+
+            <div>
+                <h2>🌍 بازار جهانی</h2>
+
+                <p>
+                    قیمت‌های جهانی
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="cards">
+
+
+            <div class="card">
+
+                <span>
+                    اونس طلا
+                </span>
+
+                <h3 id="goldOunce">
+                    قیمت نمونه
+                </h3>
+
+                <small>
+                    USD
+                </small>
+
+            </div>
+
+
+            <div class="card">
+
+                <span>
+                    اونس نقره
+                </span>
+
+                <h3 id="silverOunce">
+                    قیمت نمونه
+                </h3>
+
+                <small>
+                    USD
+                </small>
+
+            </div>
+
+        </div>
+
+    </section>
+
 
 
     <!-- ================= HEATMAP ================= -->
@@ -104,42 +792,82 @@
         <div class="section-title">
 
             <div>
-                <h2>🗺️ نقشه حرارتی بازار</h2>
-                <p>تغییرات دارایی‌ها</p>
+                <h2>🔥 نقشه حرارتی بازار</h2>
+
+                <p>
+                    تغییرات قیمت
+                </p>
             </div>
 
         </div>
 
-        <div id="heatmap" class="heatmap">
+
+        <div class="heatmap">
+
 
             <div class="heat-item">
-                <span>🥇 طلا</span>
-                <strong id="heatGold">---</strong>
+
+                <span>طلا</span>
+
+                <strong id="heatGold">
+                    ---
+                </strong>
+
             </div>
 
-            <div class="heat-item">
-                <span>💵 دلار</span>
-                <strong id="heatDollar">---</strong>
-            </div>
 
             <div class="heat-item">
-                <span>🪙 سکه</span>
-                <strong id="heatCoin">---</strong>
+
+                <span>دلار</span>
+
+                <strong id="heatDollar">
+                    ---
+                </strong>
+
             </div>
 
-            <div class="heat-item">
-                <span>⚪ نقره</span>
-                <strong id="heatSilver">---</strong>
-            </div>
 
             <div class="heat-item">
-                <span>💶 یورو</span>
-                <strong id="heatEuro">---</strong>
+
+                <span>سکه</span>
+
+                <strong id="heatCoin">
+                    ---
+                </strong>
+
             </div>
 
+
             <div class="heat-item">
-                <span>🇬🇧 پوند</span>
-                <strong id="heatPound">---</strong>
+
+                <span>نقره</span>
+
+                <strong id="heatSilver">
+                    ---
+                </strong>
+
+            </div>
+
+
+            <div class="heat-item">
+
+                <span>یورو</span>
+
+                <strong id="heatEuro">
+                    ---
+                </strong>
+
+            </div>
+
+
+            <div class="heat-item">
+
+                <span>پوند</span>
+
+                <strong id="heatPound">
+                    ---
+                </strong>
+
             </div>
 
         </div>
@@ -147,17 +875,32 @@
     </section>
 
 
-    <!-- ================= TOP MOVERS ================= -->
+
+    <!-- ================= MOVERS ================= -->
 
     <section>
 
-        <h2>⚡ بیشترین تغییرات</h2>
+        <div class="section-title">
+
+            <div>
+                <h2>🚀 بیشترین تغییرات</h2>
+
+                <p>
+                    قوی‌ترین رشد و افت
+                </p>
+            </div>
+
+        </div>
+
 
         <div class="movers-grid">
 
+
             <div class="mover-card gain">
 
-                <span>🚀 بیشترین رشد</span>
+                <span>
+                    🚀 بیشترین رشد
+                </span>
 
                 <strong id="topGainer">
                     ---
@@ -172,7 +915,9 @@
 
             <div class="mover-card loss">
 
-                <span>📉 بیشترین افت</span>
+                <span>
+                    📉 بیشترین افت
+                </span>
 
                 <strong id="topLoser">
                     ---
@@ -189,24 +934,6 @@
     </section>
 
 
-    <!-- ================= SEARCH ================= -->
-
-    <section>
-
-        <div class="search-box">
-
-            <span>🔎</span>
-
-            <input
-                id="assetSearch"
-                type="text"
-                placeholder="جستجوی طلا، دلار، سکه..."
-            >
-
-        </div>
-
-    </section>
-
 
     <!-- ================= FAVORITES ================= -->
 
@@ -216,12 +943,19 @@
 
             <div>
                 <h2>⭐ علاقه‌مندی‌ها</h2>
-                <p>دارایی‌های مورد علاقه‌ات</p>
+
+                <p>
+                    دارایی‌های مورد علاقه
+                </p>
             </div>
 
         </div>
 
-        <div id="favorites" class="cards">
+
+        <div
+            id="favorites"
+            class="cards"
+        >
 
             <div class="empty-message">
                 هنوز دارایی‌ای اضافه نکرده‌ای ⭐
@@ -232,634 +966,6 @@
     </section>
 
 
-    <!-- ================= GOLD ================= -->
-
-    <section class="asset-section">
-
-        <div class="section-title">
-
-            <div>
-                <h2>🥇 طلا</h2>
-                <p>قیمت‌های بازار</p>
-            </div>
-
-        </div>
-
-
-        <div class="cards asset-list">
-
-
-            <div class="card asset-card"
-                 data-name="طلای ۱۸ عیار"
-                 data-key="gold18">
-
-                <button class="favorite-button"
-                        data-favorite="gold18">
-                    ☆
-                </button>
-
-                <span>طلای ۱۸ عیار</span>
-
-                <h3 id="gold18">
-                    ---
-                </h3>
-
-                <small>
-                    قیمت بازار
-                </small>
-
-                <button class="copy-price"
-                        data-copy="gold18">
-                    📋 کپی
-                </button>
-
-            </div>
-
-
-            <div class="card asset-card"
-                 data-name="طلای ۲۴ عیار"
-                 data-key="gold24">
-
-                <button class="favorite-button"
-                        data-favorite="gold24">
-                    ☆
-                </button>
-
-                <span>طلای ۲۴ عیار</span>
-
-                <h3 id="gold24">
-                    ---
-                </h3>
-
-                <small>
-                    قیمت بازار
-                </small>
-
-                <button class="copy-price"
-                        data-copy="gold24">
-                    📋 کپی
-                </button>
-
-            </div>
-
-
-            <div class="card asset-card"
-                 data-name="مثقال طلا"
-                 data-key="mesghal">
-
-                <button class="favorite-button"
-                        data-favorite="mesghal">
-                    ☆
-                </button>
-
-                <span>مثقال طلا</span>
-
-                <h3 id="mesghal">
-                    ---
-                </h3>
-
-                <small>
-                    قیمت بازار
-                </small>
-
-                <button class="copy-price"
-                        data-copy="mesghal">
-                    📋 کپی
-                </button>
-
-            </div>
-
-
-        </div>
-
-    </section>
-
-
-    <!-- ================= GOLD BUBBLE ================= -->
-
-    <section>
-
-        <h2>🔥 حباب محاسباتی طلای ۱۸</h2>
-
-        <div class="cards">
-
-
-            <div class="card bubble-card">
-
-                <span>
-                    قیمت محاسباتی
-                </span>
-
-                <h3 id="gold18Calculated">
-                    ---
-                </h3>
-
-                <small>
-                    اونس جهانی + دلار
-                </small>
-
-            </div>
-
-
-            <div class="card bubble-card">
-
-                <span>
-                    مقدار حباب
-                </span>
-
-                <h3 id="gold18Bubble">
-                    ---
-                </h3>
-
-                <small>
-                    اختلاف با بازار
-                </small>
-
-            </div>
-
-
-            <div class="card bubble-card">
-
-                <span>
-                    درصد حباب
-                </span>
-
-                <h3 id="gold18BubblePercent">
-                    ---
-                </h3>
-
-                <small>
-                    درصد اختلاف
-                </small>
-
-            </div>
-
-
-        </div>
-
-    </section>
-
-
-    <!-- ================= COINS ================= -->
-
-    <section>
-
-        <h2>🪙 سکه</h2>
-
-        <div class="cards">
-
-
-            <div class="card asset-card"
-                 data-name="سکه امامی"
-                 data-key="coin">
-
-                <button class="favorite-button"
-                        data-favorite="coin">
-                    ☆
-                </button>
-
-                <span>
-                    سکه امامی
-                </span>
-
-                <h3 id="coin">
-                    ---
-                </h3>
-
-                <small id="coinBubble">
-                    حباب: ---
-                </small>
-
-                <button class="copy-price"
-                        data-copy="coin">
-                    📋 کپی
-                </button>
-
-            </div>
-
-
-            <div class="card asset-card"
-                 data-name="بهار آزادی"
-                 data-key="bahar">
-
-                <button class="favorite-button"
-                        data-favorite="bahar">
-                    ☆
-                </button>
-
-                <span>
-                    بهار آزادی
-                </span>
-
-                <h3 id="bahar">
-                    ---
-                </h3>
-
-                <small id="baharBubble">
-                    حباب: ---
-                </small>
-
-                <button class="copy-price"
-                        data-copy="bahar">
-                    📋 کپی
-                </button>
-
-            </div>
-
-
-            <div class="card asset-card"
-                 data-name="نیم سکه"
-                 data-key="halfCoin">
-
-                <button class="favorite-button"
-                        data-favorite="halfCoin">
-                    ☆
-                </button>
-
-                <span>
-                    نیم‌سکه
-                </span>
-
-                <h3 id="halfCoin">
-                    ---
-                </h3>
-
-                <small id="halfCoinBubble">
-                    حباب: ---
-                </small>
-
-                <button class="copy-price"
-                        data-copy="halfCoin">
-                    📋 کپی
-                </button>
-
-            </div>
-
-
-            <div class="card asset-card"
-                 data-name="ربع سکه"
-                 data-key="quarterCoin">
-
-                <button class="favorite-button"
-                        data-favorite="quarterCoin">
-                    ☆
-                </button>
-
-                <span>
-                    ربع‌سکه
-                </span>
-
-                <h3 id="quarterCoin">
-                    ---
-                </h3>
-
-                <small id="quarterCoinBubble">
-                    حباب: ---
-                </small>
-
-                <button class="copy-price"
-                        data-copy="quarterCoin">
-                    📋 کپی
-                </button>
-
-            </div>
-
-
-            <div class="card asset-card"
-                 data-name="سکه گرمی"
-                 data-key="gramCoin">
-
-                <button class="favorite-button"
-                        data-favorite="gramCoin">
-                    ☆
-                </button>
-
-                <span>
-                    سکه گرمی
-                </span>
-
-                <h3 id="gramCoin">
-                    ---
-                </h3>
-
-                <small id="gramCoinBubble">
-                    حباب: ---
-                </small>
-
-                <button class="copy-price"
-                        data-copy="gramCoin">
-                    📋 کپی
-                </button>
-
-            </div>
-
-
-        </div>
-
-    </section>
-
-
-    <!-- ================= SILVER ================= -->
-
-    <section>
-
-        <h2>⚪ نقره</h2>
-
-        <div class="cards">
-
-            <div class="card asset-card"
-                 data-name="نقره ۹۹۹"
-                 data-key="silver999">
-
-                <button class="favorite-button"
-                        data-favorite="silver999">
-                    ☆
-                </button>
-
-                <span>
-                    نقره ۹۹۹
-                </span>
-
-                <h3 id="silver999">
-                    ---
-                </h3>
-
-                <small>
-                    هر گرم
-                </small>
-
-                <button class="copy-price"
-                        data-copy="silver999">
-                    📋 کپی
-                </button>
-
-            </div>
-
-
-            <div class="card asset-card"
-                 data-name="نقره ۹۲۵"
-                 data-key="silver925">
-
-                <button class="favorite-button"
-                        data-favorite="silver925">
-                    ☆
-                </button>
-
-                <span>
-                    نقره ۹۲۵
-                </span>
-
-                <h3 id="silver925">
-                    ---
-                </h3>
-
-                <small>
-                    هر گرم
-                </small>
-
-                <button class="copy-price"
-                        data-copy="silver925">
-                    📋 کپی
-                </button>
-
-            </div>
-
-
-            <div class="card asset-card"
-                 data-name="نقره یک کیلو"
-                 data-key="silverKg">
-
-                <button class="favorite-button"
-                        data-favorite="silverKg">
-                    ☆
-                </button>
-
-                <span>
-                    نقره یک کیلو
-                </span>
-
-                <h3 id="silverKg">
-                    ---
-                </h3>
-
-                <small>
-                    قیمت محاسباتی
-                </small>
-
-                <button class="copy-price"
-                        data-copy="silverKg">
-                    📋 کپی
-                </button>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- ================= CURRENCIES ================= -->
-
-    <section>
-
-        <h2>💵 ارز</h2>
-
-        <div class="cards">
-
-
-            <div class="card asset-card"
-                 data-name="دلار آمریکا"
-                 data-key="dollar">
-
-                <button class="favorite-button"
-                        data-favorite="dollar">
-                    ☆
-                </button>
-
-                <span>
-                    دلار آمریکا
-                </span>
-
-                <h3 id="dollar">
-                    ---
-                </h3>
-
-                <small>
-                    ریال
-                </small>
-
-                <button class="copy-price"
-                        data-copy="dollar">
-                    📋 کپی
-                </button>
-
-            </div>
-
-
-            <div class="card asset-card"
-                 data-name="یورو"
-                 data-key="euro">
-
-                <button class="favorite-button"
-                        data-favorite="euro">
-                    ☆
-                </button>
-
-                <span>
-                    یورو
-                </span>
-
-                <h3 id="euro">
-                    ---
-                </h3>
-
-                <small>
-                    ریال
-                </small>
-
-                <button class="copy-price"
-                        data-copy="euro">
-                    📋 کپی
-                </button>
-
-            </div>
-
-
-            <div class="card asset-card"
-                 data-name="پوند انگلیس"
-                 data-key="pound">
-
-                <button class="favorite-button"
-                        data-favorite="pound">
-                    ☆
-                </button>
-
-                <span>
-                    پوند انگلیس
-                </span>
-
-                <h3 id="pound">
-                    ---
-                </h3>
-
-                <small>
-                    ریال
-                </small>
-
-                <button class="copy-price"
-                        data-copy="pound">
-                    📋 کپی
-                </button>
-
-            </div>
-
-
-            <div class="card asset-card"
-                 data-name="درهم امارات"
-                 data-key="dirham">
-
-                <button class="favorite-button"
-                        data-favorite="dirham">
-                    ☆
-                </button>
-
-                <span>
-                    درهم امارات
-                </span>
-
-                <h3 id="dirham">
-                    ---
-                </h3>
-
-                <small>
-                    ریال
-                </small>
-
-                <button class="copy-price"
-                        data-copy="dirham">
-                    📋 کپی
-                </button>
-
-            </div>
-
-
-            <div class="card asset-card"
-                 data-name="لیر ترکیه"
-                 data-key="lira">
-
-                <button class="favorite-button"
-                        data-favorite="lira">
-                    ☆
-                </button>
-
-                <span>
-                    لیر ترکیه
-                </span>
-
-                <h3 id="lira">
-                    ---
-                </h3>
-
-                <small>
-                    ریال
-                </small>
-
-                <button class="copy-price"
-                        data-copy="lira">
-                    📋 کپی
-                </button>
-
-            </div>
-
-
-        </div>
-
-    </section>
-
-
-    <!-- ================= GLOBAL ================= -->
-
-    <section>
-
-        <h2>🌍 بازار جهانی</h2>
-
-        <div class="cards">
-
-
-            <div class="card">
-                <span>
-                    اونس طلا
-                </span>
-
-                <h3 id="goldOunce">
-                    ---
-                </h3>
-
-                <small>
-                    USD
-                </small>
-            </div>
-
-
-            <div class="card">
-                <span>
-                    اونس نقره
-                </span>
-
-                <h3 id="silverOunce">
-                    ---
-                </h3>
-
-                <small>
-                    USD
-                </small>
-            </div>
-
-
-        </div>
-
-    </section>
-
 
     <!-- ================= CHART ================= -->
 
@@ -869,10 +975,12 @@
 
             <div>
                 <h2>📈 نمودار قیمت</h2>
+
                 <p>
-                    تغییرات از زمان باز بودن سایت
+                    تاریخچه قیمت‌های دریافت‌شده
                 </p>
             </div>
+
 
             <select id="chartSelect">
 
@@ -889,7 +997,7 @@
                 </option>
 
                 <option value="silver">
-                    نقره ۹۹۹
+                    نقره
                 </option>
 
             </select>
@@ -906,140 +1014,33 @@
     </section>
 
 
-    <!-- ================= COMPARISON ================= -->
-
-    <section>
-
-        <h2>⚖️ مقایسه دارایی‌ها</h2>
-
-        <div class="comparison-box">
-
-            <select id="compareOne">
-
-                <option value="gold18">
-                    طلای ۱۸ عیار
-                </option>
-
-                <option value="dollar">
-                    دلار
-                </option>
-
-                <option value="coin">
-                    سکه امامی
-                </option>
-
-                <option value="silver">
-                    نقره ۹۹۹
-                </option>
-
-            </select>
-
-
-            <span>VS</span>
-
-
-            <select id="compareTwo">
-
-                <option value="dollar">
-                    دلار
-                </option>
-
-                <option value="gold18">
-                    طلای ۱۸ عیار
-                </option>
-
-                <option value="coin">
-                    سکه امامی
-                </option>
-
-                <option value="silver">
-                    نقره ۹۹۹
-                </option>
-
-            </select>
-
-
-            <button id="compareButton">
-                ⚖️ مقایسه
-            </button>
-
-        </div>
-
-
-        <div id="comparisonResult"
-             class="result-box">
-            دو دارایی را انتخاب کنید.
-        </div>
-
-    </section>
-
-
-    <!-- ================= SCENARIO ================= -->
-
-    <section>
-
-        <h2>🔮 سناریوساز طلا</h2>
-
-        <div class="tool-box">
-
-            <label>
-                دلار جدید
-
-                <input
-                    id="scenarioDollar"
-                    type="number"
-                    placeholder="مثلاً 1000000"
-                >
-
-            </label>
-
-
-            <label>
-                اونس جدید
-
-                <input
-                    id="scenarioOunce"
-                    type="number"
-                    step="0.01"
-                    placeholder="مثلاً 3000"
-                >
-
-            </label>
-
-
-            <button id="scenarioButton">
-                🔮 محاسبه سناریو
-            </button>
-
-        </div>
-
-
-        <div id="scenarioResult"
-             class="result-box">
-
-            مقدارهای جدید را وارد کنید.
-
-        </div>
-
-    </section>
-
 
     <!-- ================= GOLD CALCULATOR ================= -->
 
     <section>
 
-        <h2>🧮 ماشین‌حساب طلا</h2>
+        <div class="section-title">
+
+            <div>
+                <h2>🧮 محاسبه‌گر طلا</h2>
+
+                <p>
+                    محاسبه ارزش تقریبی طلا
+                </p>
+            </div>
+
+        </div>
+
 
         <div class="tool-box">
 
             <label>
-                وزن طلا (گرم)
+
+                وزن به گرم
 
                 <input
                     id="goldWeight"
                     type="number"
-                    min="0"
-                    step="0.01"
                     placeholder="مثلاً 5"
                 >
 
@@ -1047,6 +1048,7 @@
 
 
             <label>
+
                 عیار
 
                 <select id="goldKarats">
@@ -1065,38 +1067,49 @@
 
 
             <button id="calculateGold">
-                🧮 محاسبه
+                محاسبه ارزش طلا
             </button>
 
         </div>
 
 
-        <div id="calculatorResult"
-             class="result-box">
-
-            وزن طلا را وارد کنید.
-
+        <div
+            id="calculatorResult"
+            class="result-box"
+        >
+            نتیجه اینجا نمایش داده می‌شود.
         </div>
 
     </section>
+
 
 
     <!-- ================= CURRENCY CONVERTER ================= -->
 
     <section>
 
-        <h2>💱 تبدیل ارز</h2>
+        <div class="section-title">
+
+            <div>
+                <h2>💱 تبدیل ارز</h2>
+
+                <p>
+                    تبدیل مقدار ارز به ریال
+                </p>
+            </div>
+
+        </div>
+
 
         <div class="tool-box">
 
             <label>
+
                 مقدار
 
                 <input
                     id="currencyAmount"
                     type="number"
-                    min="0"
-                    step="0.01"
                     placeholder="مثلاً 100"
                 >
 
@@ -1104,6 +1117,7 @@
 
 
             <label>
+
                 ارز
 
                 <select id="currencyType">
@@ -1134,31 +1148,191 @@
 
 
             <button id="convertCurrency">
-                💱 تبدیل
+                تبدیل
             </button>
 
         </div>
 
 
-        <div id="currencyResult"
-             class="result-box">
-
-            مقدار را وارد کنید.
-
+        <div
+            id="currencyResult"
+            class="result-box"
+        >
+            نتیجه اینجا نمایش داده می‌شود.
         </div>
 
     </section>
+
+
+
+    <!-- ================= COMPARISON ================= -->
+
+    <section>
+
+        <div class="section-title">
+
+            <div>
+                <h2>⚖️ مقایسه دارایی‌ها</h2>
+
+                <p>
+                    مقایسه ارزش دو دارایی
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="comparison-box">
+
+            <select id="compareOne">
+
+                <option value="gold18">
+                    طلای ۱۸ عیار
+                </option>
+
+                <option value="dollar">
+                    دلار
+                </option>
+
+                <option value="coin">
+                    سکه امامی
+                </option>
+
+                <option value="silver999">
+                    نقره ۹۹۹
+                </option>
+
+            </select>
+
+
+            <span>
+                VS
+            </span>
+
+
+            <select id="compareTwo">
+
+                <option value="dollar">
+                    دلار
+                </option>
+
+                <option value="gold18">
+                    طلای ۱۸ عیار
+                </option>
+
+                <option value="coin">
+                    سکه امامی
+                </option>
+
+                <option value="silver999">
+                    نقره ۹۹۹
+                </option>
+
+            </select>
+
+
+            <button id="compareButton">
+                مقایسه
+            </button>
+
+        </div>
+
+
+        <div
+            id="comparisonResult"
+            class="result-box"
+        >
+            نتیجه مقایسه اینجا نمایش داده می‌شود.
+        </div>
+
+    </section>
+
+
+
+    <!-- ================= SCENARIO ================= -->
+
+    <section>
+
+        <div class="section-title">
+
+            <div>
+                <h2>🔮 ماشین حساب سناریو</h2>
+
+                <p>
+                    اگر دلار و اونس تغییر کنند، قیمت تقریبی طلا چقدر می‌شود؟
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="tool-box">
+
+            <label>
+
+                دلار فرضی
+
+                <input
+                    id="scenarioDollar"
+                    type="number"
+                    placeholder="مثلاً 1000000"
+                >
+
+            </label>
+
+
+            <label>
+
+                اونس فرضی
+
+                <input
+                    id="scenarioOunce"
+                    type="number"
+                    placeholder="مثلاً 3400"
+                >
+
+            </label>
+
+
+            <button id="scenarioButton">
+                محاسبه سناریو
+            </button>
+
+        </div>
+
+
+        <div
+            id="scenarioResult"
+            class="result-box"
+        >
+            نتیجه سناریو اینجا نمایش داده می‌شود.
+        </div>
+
+    </section>
+
 
 
     <!-- ================= ALERT ================= -->
 
     <section>
 
-        <h2>🔔 هشدار قیمت</h2>
+        <div class="section-title">
+
+            <div>
+                <h2>🔔 هشدار قیمت</h2>
+
+                <p>
+                    وقتی قیمت به مقدار مشخص رسید، هشدار بده
+                </p>
+            </div>
+
+        </div>
+
 
         <div class="tool-box">
 
             <label>
+
                 دارایی
 
                 <select id="alertAsset">
@@ -1175,18 +1349,22 @@
                         سکه امامی
                     </option>
 
+                    <option value="silver999">
+                        نقره ۹۹۹
+                    </option>
+
                 </select>
 
             </label>
 
 
             <label>
+
                 قیمت هدف
 
                 <input
                     id="alertPrice"
                     type="number"
-                    min="0"
                     placeholder="قیمت هدف"
                 >
 
@@ -1194,62 +1372,76 @@
 
 
             <button id="setAlert">
-                🔔 فعال کردن
+                فعال کردن هشدار
             </button>
 
         </div>
 
 
-        <div id="alertResult"
-             class="result-box">
-
+        <div
+            id="alertResult"
+            class="result-box"
+        >
             هنوز هشداری تنظیم نشده.
-
         </div>
 
     </section>
+
 
 
     <!-- ================= SETTINGS ================= -->
 
     <section>
 
-        <h2>⚙️ تنظیمات</h2>
+        <div class="section-title">
+
+            <div>
+                <h2>⚙️ تنظیمات</h2>
+
+                <p>
+                    شخصی‌سازی داشبورد
+                </p>
+            </div>
+
+        </div>
+
 
         <div class="settings-box">
 
-            <label class="switch-row">
+
+            <div class="switch-row">
 
                 <span>
-                    🔄 بروزرسانی خودکار
+                    🔄 بروزرسانی خودکار هر ۶۰ ثانیه
                 </span>
 
                 <input
-                    type="checkbox"
                     id="autoUpdate"
+                    type="checkbox"
                     checked
                 >
 
-            </label>
+            </div>
 
 
-            <label class="switch-row">
+            <div class="switch-row">
 
                 <span>
-                    ✨ انیمیشن قیمت
+                    ✨ انیمیشن تغییر قیمت
                 </span>
 
                 <input
-                    type="checkbox"
                     id="priceAnimation"
+                    type="checkbox"
                     checked
                 >
 
-            </label>
+            </div>
 
         </div>
 
     </section>
+
 
 
     <!-- ================= UPDATE ================= -->
@@ -1258,26 +1450,26 @@
 
         <button
             id="mainRefresh"
-            class="main-refresh">
-
+            class="main-refresh"
+        >
             🔄 بروزرسانی قیمت‌ها
-
         </button>
 
 
         <p id="updateTime">
-            در حال دریافت قیمت‌ها...
+            آخرین بروزرسانی هنوز انجام نشده
         </p>
 
 
-        <div id="apiStatus"
-             class="api-status">
-
-            🟡 در حال اتصال به API...
-
+        <div
+            id="apiStatus"
+            class="api-status"
+        >
+            🟡 در انتظار اتصال
         </div>
 
     </div>
+
 
 
     <!-- ================= FOOTER ================= -->
@@ -1285,18 +1477,16 @@
     <footer>
 
         <strong>
-            بازار ایران PRO 📊
+            بازار ایران
         </strong>
 
         <br>
 
-        طلا • سکه • نقره • ارز • بازار جهانی
+        طلا • نقره • سکه • ارز
 
         <br>
 
-        <small>
-            قیمت‌ها از API متصل به سایت دریافت می‌شوند.
-        </small>
+        ساخته شده با ❤️ و JavaScript
 
     </footer>
 
@@ -1304,12 +1494,7 @@
 </div>
 
 
-<!-- Chart.js -->
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script src="script.js"></script>
 
 </body>
-
 </html>
