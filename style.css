@@ -9,9 +9,11 @@ html {
 body {
     margin: 0;
     font-family: Tahoma, Arial, sans-serif;
+
     background: #08111f;
     color: #edf4ff;
-    transition: 0.35s;
+
+    transition: .35s;
 
     background-image:
         radial-gradient(
@@ -37,25 +39,6 @@ body.light {
     margin: auto;
 }
 
-.ticker {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-
-    background: #050b14dd;
-
-    backdrop-filter: blur(15px);
-
-    border-bottom: 1px solid #ffffff15;
-
-    overflow: hidden;
-    white-space: nowrap;
-}
-
-.ticker div {
-    padding: 9px;
-}
-
 .hero {
     display: flex;
     justify-content: space-between;
@@ -70,14 +53,12 @@ body.light {
 }
 
 .hero p {
-    opacity: 0.65;
+    opacity: .65;
 }
 
 .live {
     display: inline-flex;
-
     align-items: center;
-
     gap: 8px;
 
     padding: 7px 12px;
@@ -85,7 +66,6 @@ body.light {
     border-radius: 30px;
 
     background: #19b36b20;
-
     color: #63e6a1;
 }
 
@@ -97,22 +77,21 @@ body.light {
 
     background: #25d98a;
 
-    box-shadow:
-        0 0 12px #25d98a;
+    box-shadow: 0 0 12px #25d98a;
 }
 
 .header-buttons {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 9px;
 }
 
 .header-buttons button {
     border: 0;
 
-    padding: 12px 16px;
+    padding: 11px 14px;
 
-    border-radius: 14px;
+    border-radius: 13px;
 
     background: #ffffff12;
 
@@ -120,7 +99,31 @@ body.light {
 
     cursor: pointer;
 
-    font-size: 20px;
+    font-size: 19px;
+
+    transition: .2s;
+}
+
+.header-buttons button:hover {
+    transform: scale(1.08);
+    background: #ffffff20;
+}
+
+#clock {
+    opacity: .7;
+    font-size: 14px;
+}
+
+#dashboard {
+    transition: .35s;
+}
+
+#dashboard.minimized {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transform: scaleY(.9);
+    margin: 0;
 }
 
 .market-dashboard {
@@ -152,7 +155,7 @@ body.light {
 }
 
 .market-score small {
-    opacity: 0.6;
+    opacity: .6;
 }
 
 .score-bar {
@@ -167,7 +170,6 @@ body.light {
 
 .score-bar div {
     height: 100%;
-
     width: 0;
 
     background: #31d39a;
@@ -200,7 +202,7 @@ body.light {
 }
 
 .dashboard-grid small {
-    opacity: 0.55;
+    opacity: .55;
 }
 
 .dashboard-grid b {
@@ -210,7 +212,7 @@ body.light {
 .dashboard-grid em {
     margin-top: 7px;
 
-    opacity: 0.6;
+    opacity: .6;
 
     font-style: normal;
 }
@@ -231,9 +233,12 @@ body.light {
     margin: 0 0 5px;
 }
 
+.section-title p {
+    opacity: .55;
+}
+
 .search {
     width: 330px;
-
     max-width: 100%;
 }
 
@@ -254,7 +259,6 @@ select {
 
 select option {
     background: #172235;
-
     color: white;
 }
 
@@ -281,7 +285,7 @@ select option {
 
     border: 1px solid #ffffff12;
 
-    transition: 0.25s;
+    transition: .25s;
 }
 
 .card:hover {
@@ -291,7 +295,7 @@ select option {
 }
 
 .card span {
-    opacity: 0.7;
+    opacity: .7;
 }
 
 .card h3 {
@@ -301,14 +305,13 @@ select option {
 }
 
 .card small {
-    opacity: 0.55;
+    opacity: .55;
 }
 
 .favorite {
     position: absolute;
 
     left: 12px;
-
     top: 10px;
 
     border: 0;
@@ -324,7 +327,6 @@ select option {
 
 .change {
     margin-top: 10px;
-
     font-size: 13px;
 }
 
@@ -360,13 +362,11 @@ select option {
 
 .heat-item.up {
     background: #0d9b5a25;
-
     border-color: #31d39a66;
 }
 
 .heat-item.down {
     background: #d6454525;
-
     border-color: #ff6b6b66;
 }
 
@@ -401,7 +401,6 @@ select option {
 .tool-box input,
 .tool-box select {
     flex: 1;
-
     min-width: 150px;
 }
 
@@ -461,7 +460,7 @@ button {
 }
 
 .update-box p {
-    opacity: 0.6;
+    opacity: .6;
 }
 
 footer {
@@ -469,31 +468,30 @@ footer {
 
     padding: 35px 0 50px;
 
-    opacity: 0.45;
+    opacity: .45;
 }
 
 body.light .card,
 body.light .tool-box,
 body.light .result,
 body.light .settings,
-body.light .heat-item {
+body.light .heat-item,
+body.light .market-dashboard {
     background: white;
 
     border-color: #00000012;
 
-    box-shadow:
-        0 8px 25px #29405b14;
-}
-
-body.light .ticker {
-    background: #ffffffdd;
-
-    color: #182230;
+    box-shadow: 0 8px 25px #29405b14;
 }
 
 body.light select option {
     background: white;
+    color: #182230;
+}
 
+body.light input,
+body.light select {
+    background: white;
     color: #182230;
 }
 
@@ -501,7 +499,6 @@ body.light select option {
 
     .hero {
         flex-direction: column;
-
         align-items: flex-start;
     }
 
@@ -515,7 +512,6 @@ body.light select option {
 
     .section-title {
         flex-direction: column;
-
         align-items: flex-start;
     }
 
@@ -527,21 +523,4 @@ body.light select option {
         height: 300px;
     }
 
-}
-.ticker {
-    overflow-x: auto;
-    overflow-y: hidden;
-    white-space: nowrap;
-    cursor: grab;
-    scrollbar-width: none;
-}
-
-.ticker::-webkit-scrollbar {
-    display: none;
-}
-
-.ticker div {
-    width: max-content;
-    min-width: 100%;
-    padding: 10px 20px;
 }
