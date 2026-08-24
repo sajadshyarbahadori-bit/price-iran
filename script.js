@@ -11,9 +11,13 @@ let alerts = JSON.parse(
 
 let chart = null;
 
-const AUTO_UPDATE_INTERVAL = 5 * 60 * 60 * 1000;
+
+/* =========================
+   نام دارایی‌ها
+========================= */
 
 const assetNames = {
+
     GOLD_18_RLS: "طلای ۱۸ عیار",
     GOLD_24_RLS: "طلای ۲۴ عیار",
     GOLD_MESGHAL_RLS: "مثقال طلا",
@@ -34,7 +38,13 @@ const assetNames = {
     SILVER_OUNCE_USD: "اونس نقره"
 };
 
+
+/* =========================
+   اتصال ID ها به API
+========================= */
+
 const elementMap = {
+
     gold18: "GOLD_18_RLS",
     gold24: "GOLD_24_RLS",
     mesghal: "GOLD_MESGHAL_RLS",
@@ -54,7 +64,7 @@ const elementMap = {
 
 
 /* =========================
-   ابزار
+   ابزار قیمت
 ========================= */
 
 function rial(value) {
@@ -71,7 +81,7 @@ function rial(value) {
 
 
 /* =========================
-   دریافت قیمت
+   دریافت قیمت‌ها
 ========================= */
 
 async function updatePrices() {
@@ -87,6 +97,10 @@ async function updatePrices() {
             "در حال دریافت قیمت‌ها...";
     }
 
+    if (apiStatus) {
+        apiStatus.textContent = "🟡";
+    }
+
     try {
 
         const response = await fetch(
@@ -97,28 +111,61 @@ async function updatePrices() {
             }
         );
 
+
+        /* =========================
+           بررسی وضعیت API
+        ========================= */
+
         if (!response.ok) {
+
             throw new Error(
-                "API status: " + response.status
+                "API status: " +
+                response.status
             );
         }
 
-        const result =
+
+        const apiResponse =
             await response.json();
 
-        console.log("API:", result);
+        console.log(
+            "API:",
+            apiResponse
+        );
+
+
+        /* =========================
+           پشتیبانی از دو نوع پاسخ
+        ========================= */
+
+        const result =
+            Array.isArray(apiResponse)
+                ? apiResponse
+                : apiResponse.prices;
+
 
         if (!Array.isArray(result)) {
+
             throw new Error(
-                "API response is not an array"
+                "API response does not contain prices array"
             );
         }
+
+
+        /* =========================
+           ذخیره قیمت قبلی
+        ========================= */
 
         previousPrices = {
             ...prices
         };
 
         prices = {};
+
+
+        /* =========================
+           تبدیل داده‌ها
+        ========================= */
 
         result.forEach(item => {
 
@@ -140,7 +187,9 @@ async function updatePrices() {
         });
 
 
-        /* قیمت‌ها */
+        /* =========================
+           قیمت‌های اصلی
+        ========================= */
 
         Object.entries(elementMap)
             .forEach(([id, key]) => {
@@ -148,19 +197,28 @@ async function updatePrices() {
                 const element =
                     document.getElementById(id);
 
-                if (!element) return;
+                if (!element) {
+                    return;
+                }
 
                 element.textContent =
                     rial(prices[key]);
 
-                updateChange(id, key);
+                updateChange(
+                    id,
+                    key
+                );
             });
 
 
-        /* اونس طلا */
+        /* =========================
+           اونس طلا
+        ========================= */
 
         const goldOunce =
-            document.getElementById("goldOunce");
+            document.getElementById(
+                "goldOunce"
+            );
 
         if (goldOunce) {
 
@@ -179,10 +237,14 @@ async function updatePrices() {
         }
 
 
-        /* اونس نقره */
+        /* =========================
+           اونس نقره
+        ========================= */
 
         const silverOunce =
-            document.getElementById("silverOunce");
+            document.getElementById(
+                "silverOunce"
+            );
 
         if (silverOunce) {
 
@@ -201,7 +263,12 @@ async function updatePrices() {
         }
 
 
+        /* =========================
+           محاسبات
+        ========================= */
+
         calculateSilver();
+
         calculateBubble();
 
         updateDashboard(result);
@@ -217,6 +284,10 @@ async function updatePrices() {
         updateChart();
 
 
+        /* =========================
+           وضعیت API
+        ========================= */
+
         if (apiStatus) {
             apiStatus.textContent = "🟢";
         }
@@ -227,7 +298,21 @@ async function updatePrices() {
             updateTime.textContent =
                 "آخرین بروزرسانی: " +
                 new Date()
-                    .toLocaleTimeString("fa-IR");
+                    .toLocaleTimeString(
+                        "fa-IR"
+                    );
+        }
+
+
+        const lastMessage =
+            document.getElementById(
+                "lastMessage"
+            );
+
+        if (lastMessage) {
+
+            lastMessage.textContent =
+                "✅ قیمت‌ها با موفقیت بروزرسانی شدند";
         }
 
     } catch (error) {
@@ -237,14 +322,48 @@ async function updatePrices() {
             error
         );
 
+
         if (apiStatus) {
             apiStatus.textContent = "🔴";
         }
 
+
         if (updateTime) {
 
-            updateTime.textContent =
-                "❌ خطا در دریافت قیمت‌ها";
+            if (
+                error.message.includes("429")
+            ) {
+
+                updateTime.textContent =
+                    "🟠 سهمیه روزانه Servix تمام شده";
+
+            } else {
+
+                updateTime.textContent =
+                    "❌ خطا در دریافت قیمت‌ها";
+            }
+        }
+
+
+        const lastMessage =
+            document.getElementById(
+                "lastMessage"
+            );
+
+        if (lastMessage) {
+
+            if (
+                error.message.includes("429")
+            ) {
+
+                lastMessage.textContent =
+                    "🟠 سهمیه امروز Servix تمام شده";
+
+            } else {
+
+                lastMessage.textContent =
+                    "❌ دریافت قیمت‌ها ناموفق بود";
+            }
         }
     }
 }
@@ -261,13 +380,17 @@ function updateChange(id, key) {
             id + "Change"
         );
 
-    if (!element) return;
+    if (!element) {
+        return;
+    }
+
 
     const current =
         prices[key];
 
     const previous =
         previousPrices[key];
+
 
     if (
         !Number.isFinite(current) ||
@@ -279,8 +402,10 @@ function updateChange(id, key) {
         return;
     }
 
+
     const difference =
         current - previous;
+
 
     const percent =
         previous !== 0
@@ -311,7 +436,7 @@ function updateChange(id, key) {
 
 
 /* =========================
-   نقره
+   محاسبه نقره
 ========================= */
 
 function calculateSilver() {
@@ -322,6 +447,7 @@ function calculateSilver() {
     const dollar =
         prices.USD_RLS;
 
+
     if (
         !Number.isFinite(ounce) ||
         !Number.isFinite(dollar)
@@ -329,25 +455,37 @@ function calculateSilver() {
         return;
     }
 
+
     const silver999 =
-        (ounce / 31.1034768) *
+        (
+            ounce /
+            31.1034768
+        ) *
         dollar;
+
 
     const silver925 =
         silver999 * 0.925;
+
 
     const silverKg =
         silver999 * 1000;
 
 
     const s999 =
-        document.getElementById("silver999");
+        document.getElementById(
+            "silver999"
+        );
 
     const s925 =
-        document.getElementById("silver925");
+        document.getElementById(
+            "silver925"
+        );
 
     const skg =
-        document.getElementById("silverKg");
+        document.getElementById(
+            "silverKg"
+        );
 
 
     if (s999) {
@@ -382,6 +520,7 @@ function calculateBubble() {
     const dollar =
         prices.USD_RLS;
 
+
     if (
         !Number.isFinite(gold) ||
         !Number.isFinite(ounce) ||
@@ -390,17 +529,26 @@ function calculateBubble() {
         return;
     }
 
+
     const calculated =
-        (ounce / 31.1034768) *
+        (
+            ounce /
+            31.1034768
+        ) *
         dollar *
         0.75;
+
 
     const bubble =
         gold - calculated;
 
+
     const percent =
         calculated !== 0
-            ? (bubble / calculated) * 100
+            ? (
+                bubble /
+                calculated
+            ) * 100
             : 0;
 
 
@@ -426,18 +574,24 @@ function calculateBubble() {
 
 
     if (calculatedElement) {
+
         calculatedElement.textContent =
             rial(calculated);
     }
 
+
     if (bubbleElement) {
+
         bubbleElement.textContent =
             rial(bubble);
     }
 
+
     if (percentElement) {
+
         percentElement.textContent =
-            percent.toFixed(2) + "%";
+            percent.toFixed(2) +
+            "%";
     }
 
 
@@ -463,15 +617,20 @@ function calculateBubble() {
 
 
 /* =========================
-   علاقه‌مندی
+   علاقه‌مندی‌ها
 ========================= */
 
 function renderFavorites() {
 
     const container =
-        document.getElementById("favorites");
+        document.getElementById(
+            "favorites"
+        );
 
-    if (!container) return;
+    if (!container) {
+        return;
+    }
+
 
     container.innerHTML = "";
 
@@ -488,9 +647,12 @@ function renderFavorites() {
 
 
         const card =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
 
         card.className = "card";
+
 
         card.innerHTML = `
             <span>
@@ -501,6 +663,7 @@ function renderFavorites() {
                 ${rial(prices[key])}
             </h3>
         `;
+
 
         container.appendChild(card);
     });
@@ -530,7 +693,10 @@ document.addEventListener(
                 ".favorite"
             );
 
-        if (!button) return;
+        if (!button) {
+            return;
+        }
+
 
         const key =
             button.dataset.key;
@@ -540,7 +706,8 @@ document.addEventListener(
 
             favorites =
                 favorites.filter(
-                    item => item !== key
+                    item =>
+                        item !== key
                 );
 
         } else {
@@ -554,6 +721,7 @@ document.addEventListener(
             JSON.stringify(favorites)
         );
 
+
         renderFavorites();
     }
 );
@@ -564,7 +732,10 @@ document.addEventListener(
 ========================= */
 
 const search =
-    document.getElementById("search");
+    document.getElementById(
+        "search"
+    );
+
 
 if (search) {
 
@@ -659,6 +830,7 @@ if (themeButton) {
     );
 }
 
+
 applyTheme();
 
 
@@ -686,7 +858,9 @@ function populateSelects() {
 
     selects.forEach(select => {
 
-        if (!select) return;
+        if (!select) {
+            return;
+        }
 
 
         const current =
@@ -704,11 +878,14 @@ function populateSelects() {
                         "option"
                     );
 
+
                 option.value = key;
+
 
                 option.textContent =
                     assetNames[key] ||
                     key;
+
 
                 select.appendChild(
                     option
@@ -737,6 +914,7 @@ const compareButton =
         "compareButton"
     );
 
+
 if (compareButton) {
 
     compareButton.addEventListener(
@@ -748,10 +926,12 @@ if (compareButton) {
                     "compareOne"
                 )?.value;
 
+
             const two =
                 document.getElementById(
                     "compareTwo"
                 )?.value;
+
 
             const result =
                 document.getElementById(
@@ -808,6 +988,7 @@ const calculateGoldButton =
     document.getElementById(
         "calculateGold"
     );
+
 
 if (calculateGoldButton) {
 
@@ -891,6 +1072,7 @@ const convertCurrency =
         "convertCurrency"
     );
 
+
 if (convertCurrency) {
 
     convertCurrency.addEventListener(
@@ -964,6 +1146,7 @@ const scenarioButton =
         "scenarioButton"
     );
 
+
 if (scenarioButton) {
 
     scenarioButton.addEventListener(
@@ -1007,7 +1190,10 @@ if (scenarioButton) {
 
 
             const calculated =
-                (ounce / 31.1034768) *
+                (
+                    ounce /
+                    31.1034768
+                ) *
                 dollar *
                 0.75;
 
@@ -1028,6 +1214,7 @@ const setAlert =
     document.getElementById(
         "setAlert"
     );
+
 
 if (setAlert) {
 
@@ -1083,7 +1270,11 @@ function renderAlerts() {
             "alertsList"
         );
 
-    if (!container) return;
+
+    if (!container) {
+        return;
+    }
+
 
     container.innerHTML = "";
 
@@ -1095,6 +1286,7 @@ function renderAlerts() {
                 document.createElement(
                     "div"
                 );
+
 
             item.className =
                 "result";
@@ -1172,7 +1364,9 @@ const chartSelect =
 
 function updateChart() {
 
-    if (!chartSelect) return;
+    if (!chartSelect) {
+        return;
+    }
 
 
     const key =
@@ -1258,6 +1452,7 @@ const mainRefresh =
         "mainRefresh"
     );
 
+
 if (mainRefresh) {
 
     mainRefresh.addEventListener(
@@ -1266,6 +1461,7 @@ if (mainRefresh) {
 
             mainRefresh.disabled =
                 true;
+
 
             mainRefresh.textContent =
                 "⏳ در حال بروزرسانی...";
@@ -1276,6 +1472,7 @@ if (mainRefresh) {
 
             mainRefresh.disabled =
                 false;
+
 
             mainRefresh.textContent =
                 "🔄 بروزرسانی قیمت‌ها";
@@ -1296,7 +1493,9 @@ function updateClock() {
         );
 
 
-    if (!clock) return;
+    if (!clock) {
+        return;
+    }
 
 
     clock.textContent =
@@ -1306,38 +1505,14 @@ function updateClock() {
             );
 }
 
+
 setInterval(
     updateClock,
     1000
 );
 
+
 updateClock();
-
-
-/* =========================
-   بروزرسانی خودکار هر ۵ ساعت
-========================= */
-
-setInterval(
-    () => {
-
-        const auto =
-            document.getElementById(
-                "autoUpdate"
-            );
-
-
-        if (
-            !auto ||
-            auto.checked
-        ) {
-
-            updatePrices();
-        }
-
-    },
-    AUTO_UPDATE_INTERVAL
-);
 
 
 /* =========================
@@ -1349,25 +1524,44 @@ const autoUpdate =
         "autoUpdate"
     );
 
+
 if (autoUpdate) {
+
+    /*
+       عمداً آپدیت خودکار انجام نمی‌شود.
+       برای صرفه‌جویی در سهمیه Servix،
+       فقط دکمه بروزرسانی دستی فعال است.
+    */
+
+    autoUpdate.checked = false;
+
 
     autoUpdate.addEventListener(
         "change",
         () => {
 
-            console.log(
-                "Auto update:",
-                autoUpdate.checked
-            );
+            if (autoUpdate.checked) {
+
+                console.log(
+                    "آپدیت خودکار غیرفعال است؛ بروزرسانی فقط دستی انجام می‌شود."
+                );
+
+                autoUpdate.checked = false;
+            }
         }
     );
 }
 
 
+/* =========================
+   حالت داشبورد
+========================= */
+
 const dashboardMode =
     document.getElementById(
         "dashboardMode"
     );
+
 
 if (dashboardMode) {
 
@@ -1384,10 +1578,15 @@ if (dashboardMode) {
 }
 
 
+/* =========================
+   انیمیشن قیمت
+========================= */
+
 const priceAnimation =
     document.getElementById(
         "priceAnimation"
     );
+
 
 if (priceAnimation) {
 
@@ -1405,7 +1604,7 @@ if (priceAnimation) {
 
 
 /* =========================
-   داشبورد
+   داشبورد بازار
 ========================= */
 
 function updateDashboard(result) {
@@ -1425,7 +1624,8 @@ function updateDashboard(result) {
 
             changes.push({
 
-                code: item.code,
+                code:
+                    item.code,
 
                 name:
                     item.name ||
@@ -1433,7 +1633,9 @@ function updateDashboard(result) {
                     item.code,
 
                 change:
-                    Number(item.change_pct)
+                    Number(
+                        item.change_pct
+                    )
             });
         }
     });
@@ -1462,15 +1664,18 @@ function updateDashboard(result) {
             "topGainer"
         );
 
+
     const topGainerPercent =
         document.getElementById(
             "topGainerPercent"
         );
 
+
     const topLoser =
         document.getElementById(
             "topLoser"
         );
+
 
     const topLoserPercent =
         document.getElementById(
@@ -1516,12 +1721,14 @@ function updateDashboard(result) {
                 100,
 
                 50 +
-                changes.reduce(
-                    (sum, item) =>
-                        sum + item.change,
-                    0
-                ) /
-                changes.length *
+                (
+                    changes.reduce(
+                        (sum, item) =>
+                            sum + item.change,
+                        0
+                    ) /
+                    changes.length
+                ) *
                 10
             )
         );
@@ -1532,10 +1739,12 @@ function updateDashboard(result) {
             "marketScore"
         );
 
+
     const marketMood =
         document.getElementById(
             "marketMood"
         );
+
 
     const scoreBar =
         document.getElementById(
@@ -1579,9 +1788,20 @@ function updateDashboard(result) {
 
 
 /* =========================
-   شروع
+   شروع سایت
 ========================= */
 
-renderAlerts();
+/*
+   مهم:
+   اینجا دیگر updatePrices() نداریم.
 
-updatePrices();
+   بنابراین:
+   باز کردن سایت = بدون درخواست API
+   رفرش سایت = بدون درخواست API
+   فقط دکمه بروزرسانی = یک درخواست API
+*/
+
+renderAlerts();
+renderFavorites();
+applyTheme();
+updateClock();
