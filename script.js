@@ -1,7 +1,13 @@
 let prices = {};
 let previousPrices = {};
-let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-let alerts = JSON.parse(localStorage.getItem("alerts") || "[]");
+
+let favorites = JSON.parse(
+    localStorage.getItem("favorites") || "[]"
+);
+
+let alerts = JSON.parse(
+    localStorage.getItem("alerts") || "[]"
+);
 
 let chart = null;
 let countdown = 60;
@@ -10,29 +16,34 @@ const assetNames = {
     GOLD_18_RLS: "طلای ۱۸ عیار",
     GOLD_24_RLS: "طلای ۲۴ عیار",
     GOLD_MESGHAL_RLS: "مثقال طلا",
+
     SEKKEH_RLS: "سکه امامی",
     BAHAR_RLS: "بهار آزادی",
     NIM_SEKKEH_RLS: "نیم‌سکه",
     ROB_SEKKEH_RLS: "ربع‌سکه",
     GERAMI_SEKKEH_RLS: "سکه گرمی",
+
     USD_RLS: "دلار",
     EUR_RLS: "یورو",
     GBP_RLS: "پوند",
     AED_RLS: "درهم",
     TRY_RLS: "لیر",
-    SILVER_OUNCE_USD: "اونس نقره",
-    GOLD_OUNCE_USD: "اونس طلا"
+
+    GOLD_OUNCE_USD: "اونس طلا",
+    SILVER_OUNCE_USD: "اونس نقره"
 };
 
 const elementMap = {
     gold18: "GOLD_18_RLS",
     gold24: "GOLD_24_RLS",
     mesghal: "GOLD_MESGHAL_RLS",
+
     coin: "SEKKEH_RLS",
     bahar: "BAHAR_RLS",
     halfCoin: "NIM_SEKKEH_RLS",
     quarterCoin: "ROB_SEKKEH_RLS",
     gramCoin: "GERAMI_SEKKEH_RLS",
+
     dollar: "USD_RLS",
     euro: "EUR_RLS",
     pound: "GBP_RLS",
@@ -41,35 +52,38 @@ const elementMap = {
 };
 
 
-// -------------------------
-// ابزارها
-// -------------------------
+/* =========================
+   ابزارها
+========================= */
 
 function rial(value) {
+
     if (!Number.isFinite(value)) {
         return "داده موجود نیست";
     }
 
-    return Math.round(value).toLocaleString("fa-IR") + " ریال";
+    return (
+        Math.round(value).toLocaleString("fa-IR")
+        + " ریال"
+    );
 }
 
 
-function number(value) {
-    return Number(value);
-}
-
-
-// -------------------------
-// دریافت قیمت
-// -------------------------
+/* =========================
+   دریافت قیمت‌ها
+========================= */
 
 async function updatePrices() {
 
-    const updateTime = document.getElementById("updateTime");
-    const apiStatus = document.getElementById("apiStatus");
+    const updateTime =
+        document.getElementById("updateTime");
+
+    const apiStatus =
+        document.getElementById("apiStatus");
 
     if (updateTime) {
-        updateTime.textContent = "در حال دریافت قیمت‌ها...";
+        updateTime.textContent =
+            "در حال دریافت قیمت‌ها...";
     }
 
     try {
@@ -83,114 +97,151 @@ async function updatePrices() {
         );
 
         if (!response.ok) {
-            throw new Error("API status: " + response.status);
+            throw new Error(
+                "API status: " + response.status
+            );
         }
 
-        const result = await response.json();
+        const result =
+            await response.json();
 
-        console.log("SERVIX:", result);
+        console.log("API:", result);
 
         if (!Array.isArray(result)) {
-            throw new Error("API response is not an array");
+            throw new Error(
+                "API response is not an array"
+            );
         }
 
-        previousPrices = { ...prices };
+        previousPrices = {
+            ...prices
+        };
+
         prices = {};
 
         result.forEach(item => {
 
-            if (!item || item.code == null) return;
+            if (
+                !item ||
+                item.code == null
+            ) {
+                return;
+            }
 
-            const value = Number(item.value);
+            const value =
+                Number(item.value);
 
             if (Number.isFinite(value)) {
-                prices[String(item.code)] = value;
+
+                prices[String(item.code)] =
+                    value;
             }
         });
 
 
-        // نمایش قیمت‌ها
-        Object.entries(elementMap).forEach(([id, key]) => {
+        /* قیمت‌ها */
 
-            const element = document.getElementById(id);
+        Object.entries(elementMap)
+            .forEach(([id, key]) => {
 
-            if (!element) return;
+                const element =
+                    document.getElementById(id);
 
-            element.textContent = rial(prices[key]);
+                if (!element) return;
 
-            updateChange(id, key);
-        });
+                element.textContent =
+                    rial(prices[key]);
+
+                updateChange(id, key);
+            });
 
 
-        // اونس طلا
-        const goldOunce = document.getElementById("goldOunce");
+        /* اونس طلا */
+
+        const goldOunce =
+            document.getElementById(
+                "goldOunce"
+            );
 
         if (goldOunce) {
 
             goldOunce.textContent =
-                Number.isFinite(prices.GOLD_OUNCE_USD)
-                    ? prices.GOLD_OUNCE_USD.toLocaleString("en-US", {
-                        maximumFractionDigits: 4
-                    }) + " USD"
+                Number.isFinite(
+                    prices.GOLD_OUNCE_USD
+                )
+                    ? prices.GOLD_OUNCE_USD
+                        .toLocaleString(
+                            "en-US",
+                            {
+                                maximumFractionDigits: 4
+                            }
+                        )
+                        + " USD"
                     : "داده موجود نیست";
         }
 
 
-        // اونس نقره
-        const silverOunce = document.getElementById("silverOunce");
+        /* اونس نقره */
+
+        const silverOunce =
+            document.getElementById(
+                "silverOunce"
+            );
 
         if (silverOunce) {
 
             silverOunce.textContent =
-                Number.isFinite(prices.SILVER_OUNCE_USD)
-                    ? prices.SILVER_OUNCE_USD.toLocaleString("en-US", {
-                        maximumFractionDigits: 4
-                    }) + " USD"
+                Number.isFinite(
+                    prices.SILVER_OUNCE_USD
+                )
+                    ? prices.SILVER_OUNCE_USD
+                        .toLocaleString(
+                            "en-US",
+                            {
+                                maximumFractionDigits: 4
+                            }
+                        )
+                        + " USD"
                     : "داده موجود نیست";
         }
 
 
-        // نقره
         calculateSilver();
-
-
-        // حباب
         calculateBubble();
 
-
-        // داشبورد
         updateDashboard(result);
 
-
-        // علاقه‌مندی
         renderFavorites();
 
-
-        // لیست انتخاب‌ها
         populateSelects();
 
-
-        // هشدارها
         checkAlerts();
 
+        renderAlerts();
 
-        // وضعیت API
         if (apiStatus) {
             apiStatus.textContent = "🟢";
         }
 
-
         if (updateTime) {
+
             updateTime.textContent =
                 "آخرین بروزرسانی: " +
-                new Date().toLocaleTimeString("fa-IR");
+                new Date()
+                    .toLocaleTimeString("fa-IR");
         }
 
         countdown = 60;
 
+        updateChart();
+
+
     } catch (error) {
 
-        console.error("PRICE API ERROR:", error);
+        console.error(
+            "PRICE API ERROR:",
+            error
+        );
 
         if (apiStatus) {
             apiStatus.textContent = "🔴";
@@ -204,26 +255,37 @@ async function updatePrices() {
 }
 
 
-// -------------------------
-// تغییر قیمت
-// -------------------------
+/* =========================
+   تغییر قیمت
+========================= */
 
 function updateChange(id, key) {
 
-    const changeElement =
-        document.getElementById(id + "Change");
+    const element =
+        document.getElementById(
+            id + "Change"
+        );
 
-    if (!changeElement) return;
+    if (!element) return;
 
-    const current = prices[key];
-    const previous = previousPrices[key];
+    const current =
+        prices[key];
 
-    if (!Number.isFinite(current) || !Number.isFinite(previous)) {
-        changeElement.textContent = "--";
+    const previous =
+        previousPrices[key];
+
+    if (
+        !Number.isFinite(current) ||
+        !Number.isFinite(previous)
+    ) {
+
+        element.textContent = "--";
+
         return;
     }
 
-    const difference = current - previous;
+    const difference =
+        current - previous;
 
     const percent =
         previous !== 0
@@ -232,36 +294,48 @@ function updateChange(id, key) {
 
     if (difference > 0) {
 
-        changeElement.textContent =
-            "▲ +" + percent.toFixed(2) + "%";
+        element.textContent =
+            "▲ +" +
+            percent.toFixed(2) +
+            "%";
 
     } else if (difference < 0) {
 
-        changeElement.textContent =
-            "▼ " + percent.toFixed(2) + "%";
+        element.textContent =
+            "▼ " +
+            percent.toFixed(2) +
+            "%";
 
     } else {
 
-        changeElement.textContent = "━ 0%";
+        element.textContent =
+            "━ 0%";
     }
 }
 
 
-// -------------------------
-// نقره
-// -------------------------
+/* =========================
+   نقره
+========================= */
 
 function calculateSilver() {
 
-    const ounce = prices.SILVER_OUNCE_USD;
-    const dollar = prices.USD_RLS;
+    const ounce =
+        prices.SILVER_OUNCE_USD;
 
-    if (!Number.isFinite(ounce) || !Number.isFinite(dollar)) {
+    const dollar =
+        prices.USD_RLS;
+
+    if (
+        !Number.isFinite(ounce) ||
+        !Number.isFinite(dollar)
+    ) {
         return;
     }
 
     const silver999 =
-        (ounce / 31.1034768) * dollar;
+        (ounce / 31.1034768) *
+        dollar;
 
     const silver925 =
         silver999 * 0.925;
@@ -270,19 +344,42 @@ function calculateSilver() {
         silver999 * 1000;
 
 
-    const s999 = document.getElementById("silver999");
-    const s925 = document.getElementById("silver925");
-    const skg = document.getElementById("silverKg");
+    const s999 =
+        document.getElementById(
+            "silver999"
+        );
 
-    if (s999) s999.textContent = rial(silver999);
-    if (s925) s925.textContent = rial(silver925);
-    if (skg) skg.textContent = rial(silverKg);
+    const s925 =
+        document.getElementById(
+            "silver925"
+        );
+
+    const skg =
+        document.getElementById(
+            "silverKg"
+        );
+
+
+    if (s999) {
+        s999.textContent =
+            rial(silver999);
+    }
+
+    if (s925) {
+        s925.textContent =
+            rial(silver925);
+    }
+
+    if (skg) {
+        skg.textContent =
+            rial(silverKg);
+    }
 }
 
 
-// -------------------------
-// حباب طلا
-// -------------------------
+/* =========================
+   حباب طلا
+========================= */
 
 function calculateBubble() {
 
@@ -303,16 +400,13 @@ function calculateBubble() {
         return;
     }
 
-
     const calculated =
         (ounce / 31.1034768) *
         dollar *
         0.75;
 
-
     const bubble =
         gold - calculated;
-
 
     const percent =
         calculated !== 0
@@ -321,50 +415,72 @@ function calculateBubble() {
 
 
     const calculatedElement =
-        document.getElementById("goldCalculated");
+        document.getElementById(
+            "goldCalculated"
+        );
 
     const bubbleElement =
-        document.getElementById("goldBubble");
+        document.getElementById(
+            "goldBubble"
+        );
 
     const percentElement =
-        document.getElementById("goldBubblePercent");
+        document.getElementById(
+            "goldBubblePercent"
+        );
 
     const statusElement =
-        document.getElementById("bubbleStatus");
+        document.getElementById(
+            "bubbleStatus"
+        );
 
 
-    if (calculatedElement)
-        calculatedElement.textContent = rial(calculated);
+    if (calculatedElement) {
+        calculatedElement.textContent =
+            rial(calculated);
+    }
 
-    if (bubbleElement)
-        bubbleElement.textContent = rial(bubble);
+    if (bubbleElement) {
+        bubbleElement.textContent =
+            rial(bubble);
+    }
 
-    if (percentElement)
+    if (percentElement) {
         percentElement.textContent =
             percent.toFixed(2) + "%";
-
+    }
 
     if (statusElement) {
 
         if (percent > 5) {
-            statusElement.textContent = "حباب بالا";
+
+            statusElement.textContent =
+                "حباب بالا";
+
         } else if (percent > 0) {
-            statusElement.textContent = "حباب مثبت";
+
+            statusElement.textContent =
+                "حباب مثبت";
+
         } else {
-            statusElement.textContent = "حباب منفی";
+
+            statusElement.textContent =
+                "حباب منفی";
         }
     }
 }
 
 
-// -------------------------
-// علاقه‌مندی
-// -------------------------
+/* =========================
+   علاقه‌مندی
+========================= */
 
 function renderFavorites() {
 
     const container =
-        document.getElementById("favorites");
+        document.getElementById(
+            "favorites"
+        );
 
     if (!container) return;
 
@@ -372,78 +488,109 @@ function renderFavorites() {
 
     favorites.forEach(key => {
 
-        if (!Number.isFinite(prices[key])) return;
+        if (
+            !Number.isFinite(
+                prices[key]
+            )
+        ) {
+            return;
+        }
 
         const card =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
 
         card.className = "card";
 
         card.innerHTML = `
-            <span>⭐ ${assetNames[key] || key}</span>
-            <h3>${rial(prices[key])}</h3>
+            <span>
+                ⭐ ${assetNames[key] || key}
+            </span>
+
+            <h3>
+                ${rial(prices[key])}
+            </h3>
         `;
 
         container.appendChild(card);
     });
 
 
-    document.querySelectorAll(".favorite")
-        .forEach(button => {
+    document.querySelectorAll(
+        ".favorite"
+    ).forEach(button => {
 
-            const key = button.dataset.key;
+        const key =
+            button.dataset.key;
 
-            button.textContent =
-                favorites.includes(key)
-                    ? "★"
-                    : "☆";
-        });
+        button.textContent =
+            favorites.includes(key)
+                ? "★"
+                : "☆";
+    });
 }
 
 
-document.addEventListener("click", event => {
+document.addEventListener(
+    "click",
+    event => {
 
-    const button =
-        event.target.closest(".favorite");
+        const button =
+            event.target.closest(
+                ".favorite"
+            );
 
-    if (!button) return;
+        if (!button) return;
 
-    const key = button.dataset.key;
+        const key =
+            button.dataset.key;
 
-    if (favorites.includes(key)) {
+        if (favorites.includes(key)) {
 
-        favorites =
-            favorites.filter(item => item !== key);
+            favorites =
+                favorites.filter(
+                    item => item !== key
+                );
 
-    } else {
+        } else {
 
-        favorites.push(key);
+            favorites.push(key);
+        }
+
+        localStorage.setItem(
+            "favorites",
+            JSON.stringify(favorites)
+        );
+
+        renderFavorites();
     }
+);
 
-    localStorage.setItem(
-        "favorites",
-        JSON.stringify(favorites)
+
+/* =========================
+   جستجو
+========================= */
+
+const search =
+    document.getElementById(
+        "search"
     );
-
-    renderFavorites();
-});
-
-
-// -------------------------
-// جستجو
-// -------------------------
-
-const search = document.getElementById("search");
 
 if (search) {
 
-    search.addEventListener("input", () => {
+    search.addEventListener(
+        "input",
+        () => {
 
-        const query =
-            search.value.trim().toLowerCase();
+            const query =
+                search.value
+                    .trim()
+                    .toLowerCase();
 
-        document.querySelectorAll(".card")
-            .forEach(card => {
+            document.querySelectorAll(
+                ".card"
+            ).forEach(card => {
 
                 const name =
                     card.dataset.name ||
@@ -451,62 +598,96 @@ if (search) {
 
                 card.style.display =
                     !query ||
-                    name.toLowerCase().includes(query)
+                    name
+                        .toLowerCase()
+                        .includes(query)
                         ? ""
                         : "none";
             });
-    });
+        }
+    );
 }
 
 
-// -------------------------
-// حالت شب / روز
-// -------------------------
+/* =========================
+   حالت شب / روز
+========================= */
 
 const themeButton =
-    document.getElementById("themeButton");
-
-if (themeButton) {
-
-    themeButton.addEventListener("click", () => {
-
-        document.body.classList.toggle("dark");
-
-        const dark =
-            document.body.classList.contains("dark");
-
-        localStorage.setItem(
-            "darkMode",
-            dark ? "1" : "0"
-        );
-
-        themeButton.textContent =
-            dark ? "🌙" : "☀️";
-    });
-}
+    document.getElementById(
+        "themeButton"
+    );
 
 
-if (localStorage.getItem("darkMode") === "1") {
+function applyTheme() {
 
-    document.body.classList.add("dark");
+    const light =
+        localStorage.getItem(
+            "lightMode"
+        ) === "1";
+
+    document.body.classList.toggle(
+        "light",
+        light
+    );
 
     if (themeButton) {
-        themeButton.textContent = "🌙";
+
+        themeButton.textContent =
+            light
+                ? "🌙"
+                : "☀️";
     }
 }
 
 
-// -------------------------
-// مقایسه
-// -------------------------
+if (themeButton) {
+
+    themeButton.addEventListener(
+        "click",
+        () => {
+
+            const isLight =
+                document.body
+                    .classList
+                    .contains("light");
+
+            localStorage.setItem(
+                "lightMode",
+                isLight
+                    ? "0"
+                    : "1"
+            );
+
+            applyTheme();
+        }
+    );
+}
+
+applyTheme();
+
+
+/* =========================
+   انتخاب‌ها
+========================= */
 
 function populateSelects() {
 
     const selects = [
-        document.getElementById("compareOne"),
-        document.getElementById("compareTwo"),
-        document.getElementById("alertAsset")
+
+        document.getElementById(
+            "compareOne"
+        ),
+
+        document.getElementById(
+            "compareTwo"
+        ),
+
+        document.getElementById(
+            "alertAsset"
+        )
     ];
+
 
     selects.forEach(select => {
 
@@ -517,234 +698,426 @@ function populateSelects() {
 
         select.innerHTML = "";
 
+
         Object.keys(prices)
             .forEach(key => {
 
                 const option =
-                    document.createElement("option");
+                    document.createElement(
+                        "option"
+                    );
 
                 option.value = key;
 
                 option.textContent =
-                    assetNames[key] || key;
+                    assetNames[key] ||
+                    key;
 
-                select.appendChild(option);
+                select.appendChild(
+                    option
+                );
             });
 
-        if (current && prices[current] !== undefined) {
-            select.value = current;
+
+        if (
+            current &&
+            prices[current] !== undefined
+        ) {
+            select.value =
+                current;
         }
     });
 }
 
 
+/* =========================
+   مقایسه
+========================= */
+
 const compareButton =
-    document.getElementById("compareButton");
+    document.getElementById(
+        "compareButton"
+    );
 
 if (compareButton) {
 
-    compareButton.addEventListener("click", () => {
+    compareButton.addEventListener(
+        "click",
+        () => {
 
-        const one =
-            document.getElementById("compareOne")?.value;
+            const one =
+                document.getElementById(
+                    "compareOne"
+                )?.value;
 
-        const two =
-            document.getElementById("compareTwo")?.value;
+            const two =
+                document.getElementById(
+                    "compareTwo"
+                )?.value;
 
-        const result =
-            document.getElementById("comparisonResult");
+            const result =
+                document.getElementById(
+                    "comparisonResult"
+                );
 
-        if (!one || !two || !result) return;
 
-        if (
-            !Number.isFinite(prices[one]) ||
-            !Number.isFinite(prices[two])
-        ) {
+            if (
+                !one ||
+                !two ||
+                !result
+            ) {
+                return;
+            }
+
+
+            if (
+                !Number.isFinite(
+                    prices[one]
+                ) ||
+                !Number.isFinite(
+                    prices[two]
+                )
+            ) {
+
+                result.textContent =
+                    "قیمت کافی نیست";
+
+                return;
+            }
+
+
+            const difference =
+                prices[one] -
+                prices[two];
+
+
             result.textContent =
-                "قیمت کافی نیست";
-
-            return;
+                `${assetNames[one] || one}
+                : ${rial(prices[one])}
+                | ${assetNames[two] || two}
+                : ${rial(prices[two])}
+                | اختلاف: ${rial(difference)}`;
         }
-
-        const difference =
-            prices[one] - prices[two];
-
-        result.textContent =
-            `${assetNames[one] || one}: ${rial(prices[one])}
-            | ${assetNames[two] || two}: ${rial(prices[two])}
-            | اختلاف: ${rial(difference)}`;
-    });
+    );
 }
 
 
-// -------------------------
-// محاسبه‌گر طلا
-// -------------------------
+/* =========================
+   محاسبه طلا
+========================= */
 
 const calculateGoldButton =
-    document.getElementById("calculateGold");
+    document.getElementById(
+        "calculateGold"
+    );
 
 if (calculateGoldButton) {
 
-    calculateGoldButton.addEventListener("click", () => {
+    calculateGoldButton.addEventListener(
+        "click",
+        () => {
 
-        const weight =
-            Number(document.getElementById("goldWeight")?.value);
+            const weight =
+                Number(
+                    document.getElementById(
+                        "goldWeight"
+                    )?.value
+                );
 
-        const karat =
-            Number(document.getElementById("goldKarats")?.value);
+            const karat =
+                Number(
+                    document.getElementById(
+                        "goldKarats"
+                    )?.value
+                );
 
-        const result =
-            document.getElementById("calculatorResult");
+            const result =
+                document.getElementById(
+                    "calculatorResult"
+                );
 
-        if (!weight || weight <= 0 || !result) {
 
-            if (result)
+            if (
+                !weight ||
+                weight <= 0 ||
+                !result
+            ) {
+
+                if (result) {
+                    result.textContent =
+                        "وزن معتبر وارد کن";
+                }
+
+                return;
+            }
+
+
+            const key =
+                karat === 24
+                    ? "GOLD_24_RLS"
+                    : "GOLD_18_RLS";
+
+
+            if (
+                !Number.isFinite(
+                    prices[key]
+                )
+            ) {
+
                 result.textContent =
-                    "وزن معتبر وارد کن";
+                    "قیمت طلا موجود نیست";
 
-            return;
-        }
+                return;
+            }
 
-        const key =
-            karat === 24
-                ? "GOLD_24_RLS"
-                : "GOLD_18_RLS";
-
-        if (!Number.isFinite(prices[key])) {
 
             result.textContent =
-                "قیمت طلا موجود نیست";
-
-            return;
+                rial(
+                    weight *
+                    prices[key]
+                );
         }
-
-        result.textContent =
-            rial(weight * prices[key]);
-    });
+    );
 }
 
 
-// -------------------------
-// تبدیل ارز
-// -------------------------
+/* =========================
+   تبدیل ارز
+========================= */
 
 const convertCurrency =
-    document.getElementById("convertCurrency");
+    document.getElementById(
+        "convertCurrency"
+    );
 
 if (convertCurrency) {
 
-    convertCurrency.addEventListener("click", () => {
+    convertCurrency.addEventListener(
+        "click",
+        () => {
 
-        const amount =
-            Number(document.getElementById("currencyAmount")?.value);
+            const amount =
+                Number(
+                    document.getElementById(
+                        "currencyAmount"
+                    )?.value
+                );
 
-        const type =
-            document.getElementById("currencyType")?.value;
+            const type =
+                document.getElementById(
+                    "currencyType"
+                )?.value;
 
-        const result =
-            document.getElementById("currencyResult");
+            const result =
+                document.getElementById(
+                    "currencyResult"
+                );
 
-        if (!amount || amount <= 0 || !result) {
 
-            if (result)
+            if (
+                !amount ||
+                amount <= 0 ||
+                !result
+            ) {
+
+                if (result) {
+                    result.textContent =
+                        "مقدار معتبر وارد کن";
+                }
+
+                return;
+            }
+
+
+            const rate =
+                prices[type];
+
+
+            if (!Number.isFinite(rate)) {
+
                 result.textContent =
-                    "مقدار معتبر وارد کن";
+                    "قیمت ارز موجود نیست";
 
-            return;
-        }
+                return;
+            }
 
-        const rate =
-            prices[type];
-
-        if (!Number.isFinite(rate)) {
 
             result.textContent =
-                "قیمت ارز موجود نیست";
-
-            return;
+                rial(
+                    amount * rate
+                );
         }
-
-        result.textContent =
-            rial(amount * rate);
-    });
+    );
 }
 
 
-// -------------------------
-// سناریوساز
-// -------------------------
+/* =========================
+   سناریوساز
+========================= */
 
 const scenarioButton =
-    document.getElementById("scenarioButton");
+    document.getElementById(
+        "scenarioButton"
+    );
 
 if (scenarioButton) {
 
-    scenarioButton.addEventListener("click", () => {
+    scenarioButton.addEventListener(
+        "click",
+        () => {
 
-        const dollar =
-            Number(document.getElementById("scenarioDollar")?.value);
+            const dollar =
+                Number(
+                    document.getElementById(
+                        "scenarioDollar"
+                    )?.value
+                );
 
-        const ounce =
-            Number(document.getElementById("scenarioOunce")?.value);
+            const ounce =
+                Number(
+                    document.getElementById(
+                        "scenarioOunce"
+                    )?.value
+                );
 
-        const result =
-            document.getElementById("scenarioResult");
+            const result =
+                document.getElementById(
+                    "scenarioResult"
+                );
 
-        if (
-            !Number.isFinite(dollar) ||
-            !Number.isFinite(ounce) ||
-            dollar <= 0 ||
-            ounce <= 0
-        ) {
+
+            if (
+                !Number.isFinite(dollar) ||
+                !Number.isFinite(ounce) ||
+                dollar <= 0 ||
+                ounce <= 0
+            ) {
+
+                result.textContent =
+                    "دلار و اونس معتبر وارد کن";
+
+                return;
+            }
+
+
+            const calculated =
+                (ounce / 31.1034768) *
+                dollar *
+                0.75;
+
 
             result.textContent =
-                "دلار و اونس معتبر وارد کن";
-
-            return;
+                "قیمت فرضی طلای ۱۸: " +
+                rial(calculated);
         }
-
-        const calculated =
-            (ounce / 31.1034768) *
-            dollar *
-            0.75;
-
-        result.textContent =
-            "قیمت فرضی طلای ۱۸: " +
-            rial(calculated);
-    });
+    );
 }
 
 
-// -------------------------
-// هشدار قیمت
-// -------------------------
+/* =========================
+   هشدار
+========================= */
 
 const setAlert =
-    document.getElementById("setAlert");
+    document.getElementById(
+        "setAlert"
+    );
 
 if (setAlert) {
 
-    setAlert.addEventListener("click", () => {
+    setAlert.addEventListener(
+        "click",
+        () => {
 
-        const asset =
-            document.getElementById("alertAsset")?.value;
+            const asset =
+                document.getElementById(
+                    "alertAsset"
+                )?.value;
 
-        const target =
-            Number(document.getElementById("alertPrice")?.value);
+            const target =
+                Number(
+                    document.getElementById(
+                        "alertPrice"
+                    )?.value
+                );
 
-        if (
-            !asset ||
-            !Number.isFinite(target) ||
-            target <= 0
-        ) {
-            return;
+
+            if (
+                !asset ||
+                !Number.isFinite(target) ||
+                target <= 0
+            ) {
+                return;
+            }
+
+
+            alerts.push({
+                asset,
+                target
+            });
+
+
+            localStorage.setItem(
+                "alerts",
+                JSON.stringify(alerts)
+            );
+
+
+            renderAlerts();
         }
+    );
+}
 
-        alerts.push({
-            asset,
-            target
-        });
+
+function renderAlerts() {
+
+    const container =
+        document.getElementById(
+            "alertsList"
+        );
+
+    if (!container) return;
+
+    container.innerHTML = "";
+
+
+    alerts.forEach(
+        (alert, index) => {
+
+            const item =
+                document.createElement(
+                    "div"
+                );
+
+            item.className =
+                "result";
+
+
+            item.innerHTML = `
+                ${assetNames[alert.asset] || alert.asset}
+                →
+                ${rial(alert.target)}
+
+                <button
+                    onclick="removeAlert(${index})"
+                >
+                    حذف
+                </button>
+            `;
+
+            container.appendChild(item);
+        }
+    );
+}
+
+
+window.removeAlert =
+    function(index) {
+
+        alerts.splice(
+            index,
+            1
+        );
 
         localStorage.setItem(
             "alerts",
@@ -752,50 +1125,7 @@ if (setAlert) {
         );
 
         renderAlerts();
-    });
-}
-
-
-function renderAlerts() {
-
-    const container =
-        document.getElementById("alertsList");
-
-    if (!container) return;
-
-    container.innerHTML = "";
-
-    alerts.forEach((alert, index) => {
-
-        const item =
-            document.createElement("div");
-
-        item.className = "result";
-
-        item.innerHTML = `
-            ${assetNames[alert.asset] || alert.asset}
-            → ${rial(alert.target)}
-            <button onclick="removeAlert(${index})">
-                حذف
-            </button>
-        `;
-
-        container.appendChild(item);
-    });
-}
-
-
-window.removeAlert = function(index) {
-
-    alerts.splice(index, 1);
-
-    localStorage.setItem(
-        "alerts",
-        JSON.stringify(alerts)
-    );
-
-    renderAlerts();
-};
+    };
 
 
 function checkAlerts() {
@@ -819,47 +1149,82 @@ function checkAlerts() {
 }
 
 
-// -------------------------
-// نمودار
-// -------------------------
+/* =========================
+   نمودار
+========================= */
 
 const chartSelect =
-    document.getElementById("chartSelect");
+    document.getElementById(
+        "chartSelect"
+    );
+
 
 function updateChart() {
 
     if (!chartSelect) return;
 
     const key =
-        elementMap[chartSelect.value] ||
+        elementMap[
+            chartSelect.value
+        ] ||
         chartSelect.value;
 
-    const canvas =
-        document.getElementById("priceChart");
 
-    if (!canvas || !Number.isFinite(prices[key])) {
+    const canvas =
+        document.getElementById(
+            "priceChart"
+        );
+
+
+    if (
+        !canvas ||
+        !Number.isFinite(
+            prices[key]
+        )
+    ) {
         return;
     }
+
 
     if (chart) {
         chart.destroy();
     }
 
+
     chart =
-        new Chart(canvas, {
-            type: "line",
-            data: {
-                labels: ["اکنون"],
-                datasets: [{
-                    label: assetNames[key] || key,
-                    data: [prices[key]]
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false
+        new Chart(
+            canvas,
+            {
+                type: "line",
+
+                data: {
+
+                    labels: [
+                        "اکنون"
+                    ],
+
+                    datasets: [
+                        {
+                            label:
+                                assetNames[key] ||
+                                key,
+
+                            data: [
+                                prices[key]
+                            ]
+                        }
+                    ]
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio:
+                        false
+                }
             }
-        });
+        );
 }
 
 
@@ -872,12 +1237,14 @@ if (chartSelect) {
 }
 
 
-// -------------------------
-// بروزرسانی دستی
-// -------------------------
+/* =========================
+   بروزرسانی دستی
+========================= */
 
 const mainRefresh =
-    document.getElementById("mainRefresh");
+    document.getElementById(
+        "mainRefresh"
+    );
 
 if (mainRefresh) {
 
@@ -885,14 +1252,16 @@ if (mainRefresh) {
         "click",
         async () => {
 
-            mainRefresh.disabled = true;
+            mainRefresh.disabled =
+                true;
 
             mainRefresh.textContent =
                 "⏳ در حال بروزرسانی...";
 
             await updatePrices();
 
-            mainRefresh.disabled = false;
+            mainRefresh.disabled =
+                false;
 
             mainRefresh.textContent =
                 "🔄 بروزرسانی قیمت‌ها";
@@ -901,60 +1270,83 @@ if (mainRefresh) {
 }
 
 
-// -------------------------
-// ساعت
-// -------------------------
+/* =========================
+   ساعت
+========================= */
 
 function updateClock() {
 
     const clock =
-        document.getElementById("clock");
+        document.getElementById(
+            "clock"
+        );
 
     if (!clock) return;
 
     clock.textContent =
-        new Date().toLocaleTimeString("fa-IR");
+        new Date()
+            .toLocaleTimeString(
+                "fa-IR"
+            );
 }
 
-setInterval(updateClock, 1000);
+setInterval(
+    updateClock,
+    1000
+);
+
 updateClock();
 
 
-// -------------------------
-// شمارش معکوس
-// -------------------------
+/* =========================
+   شمارش معکوس
+========================= */
 
-setInterval(() => {
+setInterval(
+    () => {
 
-    const element =
-        document.getElementById("countdown");
+        const element =
+            document.getElementById(
+                "countdown"
+            );
 
-    if (!element) return;
+        if (!element) return;
 
-    countdown--;
+        countdown--;
 
-    if (countdown <= 0) {
-        countdown = 60;
+        if (countdown <= 0) {
 
-        const auto =
-            document.getElementById("autoUpdate");
+            countdown = 60;
 
-        if (!auto || auto.checked) {
-            updatePrices();
+            const auto =
+                document.getElementById(
+                    "autoUpdate"
+                );
+
+            if (
+                !auto ||
+                auto.checked
+            ) {
+                updatePrices();
+            }
         }
-    }
 
-    element.textContent = countdown;
+        element.textContent =
+            countdown;
 
-}, 1000);
+    },
+    1000
+);
 
 
-// -------------------------
-// تنظیمات
-// -------------------------
+/* =========================
+   تنظیمات
+========================= */
 
 const autoUpdate =
-    document.getElementById("autoUpdate");
+    document.getElementById(
+        "autoUpdate"
+    );
 
 if (autoUpdate) {
 
@@ -968,7 +1360,9 @@ if (autoUpdate) {
 
 
 const dashboardMode =
-    document.getElementById("dashboardMode");
+    document.getElementById(
+        "dashboardMode"
+    );
 
 if (dashboardMode) {
 
@@ -986,7 +1380,9 @@ if (dashboardMode) {
 
 
 const priceAnimation =
-    document.getElementById("priceAnimation");
+    document.getElementById(
+        "priceAnimation"
+    );
 
 if (priceAnimation) {
 
@@ -1003,9 +1399,9 @@ if (priceAnimation) {
 }
 
 
-// -------------------------
-// داشبورد
-// -------------------------
+/* =========================
+   داشبورد
+========================= */
 
 function updateDashboard(result) {
 
@@ -1016,23 +1412,34 @@ function updateDashboard(result) {
         if (
             item &&
             item.code &&
-            Number.isFinite(Number(item.change_pct))
+            Number.isFinite(
+                Number(item.change_pct)
+            )
         ) {
 
             changes.push({
                 code: item.code,
-                name: item.name || assetNames[item.code] || item.code,
-                change: Number(item.change_pct)
+
+                name:
+                    item.name ||
+                    assetNames[item.code] ||
+                    item.code,
+
+                change:
+                    Number(item.change_pct)
             });
         }
     });
 
 
-    if (!changes.length) return;
+    if (!changes.length) {
+        return;
+    }
 
 
     changes.sort(
-        (a, b) => b.change - a.change
+        (a, b) =>
+            b.change - a.change
     );
 
 
@@ -1044,34 +1451,48 @@ function updateDashboard(result) {
 
 
     const topGainer =
-        document.getElementById("topGainer");
+        document.getElementById(
+            "topGainer"
+        );
 
     const topGainerPercent =
-        document.getElementById("topGainerPercent");
+        document.getElementById(
+            "topGainerPercent"
+        );
 
     const topLoser =
-        document.getElementById("topLoser");
+        document.getElementById(
+            "topLoser"
+        );
 
     const topLoserPercent =
-        document.getElementById("topLoserPercent");
+        document.getElementById(
+            "topLoserPercent"
+        );
 
 
-    if (topGainer)
+    if (topGainer) {
         topGainer.textContent =
             top.name;
+    }
 
-    if (topGainerPercent)
+    if (topGainerPercent) {
         topGainerPercent.textContent =
-            "+" + top.change.toFixed(2) + "%";
+            "+" +
+            top.change.toFixed(2) +
+            "%";
+    }
 
-
-    if (topLoser)
+    if (topLoser) {
         topLoser.textContent =
             bottom.name;
+    }
 
-    if (topLoserPercent)
+    if (topLoserPercent) {
         topLoserPercent.textContent =
-            bottom.change.toFixed(2) + "%";
+            bottom.change.toFixed(2) +
+            "%";
+    }
 
 
     const score =
@@ -1079,43 +1500,60 @@ function updateDashboard(result) {
             0,
             Math.min(
                 100,
-                50 + changes.reduce(
-                    (sum, item) => sum + item.change,
+
+                50 +
+                changes.reduce(
+                    (sum, item) =>
+                        sum + item.change,
                     0
-                ) / changes.length * 10
+                ) /
+                changes.length *
+                10
             )
         );
 
 
     const marketScore =
-        document.getElementById("marketScore");
+        document.getElementById(
+            "marketScore"
+        );
 
     const marketMood =
-        document.getElementById("marketMood");
+        document.getElementById(
+            "marketMood"
+        );
 
     const scoreBar =
-        document.getElementById("scoreBar");
+        document.getElementById(
+            "scoreBar"
+        );
 
 
-    if (marketScore)
+    if (marketScore) {
         marketScore.textContent =
             Math.round(score);
+    }
 
-
-    if (scoreBar)
+    if (scoreBar) {
         scoreBar.style.width =
             score + "%";
+    }
 
 
     if (marketMood) {
 
         if (score >= 65) {
+
             marketMood.textContent =
                 "📈 بازار صعودی";
+
         } else if (score <= 35) {
+
             marketMood.textContent =
                 "📉 بازار نزولی";
+
         } else {
+
             marketMood.textContent =
                 "⚖️ بازار متعادل";
         }
@@ -1123,9 +1561,10 @@ function updateDashboard(result) {
 }
 
 
-// -------------------------
-// شروع
-// -------------------------
+/* =========================
+   شروع
+========================= */
 
 renderAlerts();
+
 updatePrices();
