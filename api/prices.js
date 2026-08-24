@@ -1,151 +1,234 @@
 export default async function handler(req, res) {
     try {
+        const apiKey = process.env.OANOR_API_KEY?.trim();
+
+        if (!apiKey) {
+            return res.status(500).json({
+                error: "OANOR_API_KEY_MISSING"
+            });
+        }
 
         const response = await fetch(
-            "https://persiantoolbox.ir/api/market",
+            "https://api.oanor.com/irr-api/v1/gold",
             {
                 method: "GET",
                 headers: {
+                    "x-oanor-key": apiKey,
                     "Accept": "application/json"
                 },
                 cache: "no-store"
             }
         );
 
-        const data = await response.json();
+        const text = await response.text();
 
-        if (!response.ok || !data.ok) {
+        let data;
+
+        try {
+            data = JSON.parse(text);
+        } catch {
             return res.status(502).json({
-                error: "MARKET_API_ERROR",
-                message: data?.message || "خطا در دریافت بازار"
+                error: "INVALID_OANOR_RESPONSE",
+                status: response.status,
+                response: text
             });
         }
 
-        const market = data.data;
+        if (!response.ok) {
+            return res.status(response.status).json({
+                error: "OANOR_API_ERROR",
+                status: response.status,
+                response: data
+            });
+        }
 
         /*
-         * API جدید:
-         *
-         * currencies
-         * gold
-         * crypto
+         * OANOR gold endpoint
+         * شامل:
+         * اونس طلا
+         * طلای 18 و 24
+         * مثقال
+         * سکه امامی
+         * بهار آزادی
+         * نیم سکه
+         * ربع سکه
+         * سکه گرمی
          */
 
-        const usd =
-            Number(market.currencies?.IRR?.rate);
+        const source = data.data ?? data;
 
-        const gold =
-            Number(market.gold?.pricePerGram);
+        const result = [];
 
+        function add(code, value) {
+            if (value !== undefined && value !== null) {
+                const number = Number(value);
 
-        // تبدیل نرخ‌های ارز
-        // نرخ‌ها نسبت به USD هستند.
-        const eur =
-            usd /
-            Number(market.currencies?.EUR?.rate);
+                if (Number.isFinite(number)) {
+                    result.push({
+                        code,
+                        value: number
+                    });
+                }
+            }
+        }
 
-        const gbp =
-            usd /
-            Number(market.currencies?.GBP?.rate);
+        /*
+         * اگر پاسخ API به شکل مستقیم باشد
+         */
+        add("GOLD_18_RLS",
+            source.GOLD_18_RLS ??
+            source.gold18 ??
+            source.gold_18
+        );
 
-        const aed =
-            usd /
-            Number(market.currencies?.AED?.rate);
+        add("GOLD_24_RLS",
+            source.GOLD_24_RLS ??
+            source.gold24 ??
+            source.gold_24
+        );
 
-        const tryRate =
-            usd /
-            Number(market.currencies?.TRY?.rate);
+        add("GOLD_MESGHAL_RLS",
+            source.GOLD_MESGHAL_RLS ??
+            source.mesghal
+        );
 
+        add("SEKKEH_RLS",
+            source.SEKKEH_RLS ??
+            source.emami ??
+            source.coin
+        );
 
-        const prices = [
+        add("BAHAR_RLS",
+            source.BAHAR_RLS ??
+            source.bahar
+        );
 
-            {
-                code: "USD_RLS",
-                value: usd
-            },
+        add("NIM_SEKKEH_RLS",
+            source.NIM_SEKKEH_RLS ??
+            source.half
+        );
 
-            {
-                code: "EUR_RLS",
-                value: eur
-            },
+        add("ROB_SEKKEH_RLS",
+            source.ROB_SEKKEH_RLS ??
+            source.quarter
+        );
 
-            {
-                code: "GBP_RLS",
-                value: gbp
-            },
+        add("GERAMI_SEKKEH_RLS",
+            source.GERAMI_SEKKEH_RLS ??
+            source.gerami
+        );
 
-            {
-                code: "AED_RLS",
-                value: aed
-            },
-
-            {
-                code: "TRY_RLS",
-                value: tryRate
-            },
-
-
-            // طلای 18 عیار
-            {
-                code: "GOLD_18_RLS",
-                value: gold
-            },
-
-            // تخمین 24 عیار
-            {
-                code: "GOLD_24_RLS",
-                value:
-                    gold / 0.75
-            },
-
-
-            // مثقال تقریبی
-            {
-                code: "GOLD_MESGHAL_RLS",
-                value:
-                    gold * 4.6083
-            },
+        add("GOLD_OUNCE_USD",
+            source.GOLD_OUNCE_USD ??
+            source.ounce
+        );
 
 
-            // کریپتو
-            {
-                code: "BTC_USD",
-                value:
-                    Number(
-                        market.crypto?.BTC?.priceUSD
-                    )
-            },
+        /*
+         * اگر API خودش آرایه instruments داشته باشد
+         */
+        if (Array.isArray(source)) {
 
-            {
-                code: "ETH_USD",
-                value:
-                    Number(
-                        market.crypto?.ETH?.priceUSD
-                    )
+            source.forEach(item => {
+
+                if (!item) return;
+
+                const code = String(
+                    item.code ??
+                    item.symbol ??
+                    ""
+                ).toUpperCase();
+
+                const value = Number(
+                    item.value ??
+                    item.price ??
+                    item.close
+                );
+
+                if (!Number.isFinite(value)) return;
+
+                const mapping = {
+                    USD_RLS: "USD_RLS",
+                    EUR_RLS: "EUR_RLS",
+                    GBP_RLS: "GBP_RLS",
+                    AED_RLS: "AED_RLS",
+                    TRY_RLS: "TRY_RLS",
+
+                    GOLD_18_RLS: "GOLD_18_RLS",
+                    GOLD_24_RLS: "GOLD_24_RLS",
+                    GOLD_MESGHAL_RLS: "GOLD_MESGHAL_RLS",
+
+                    SEKKEH_RLS: "SEKKEH_RLS",
+                    BAHAR_RLS: "BAHAR_RLS",
+                    NIM_SEKKEH_RLS: "NIM_SEKKEH_RLS",
+                    ROB_SEKKEH_RLS: "ROB_SEKKEH_RLS",
+                    GERAMI_SEKKEH_RLS: "GERAMI_SEKKEH_RLS",
+
+                    GOLD_OUNCE_USD: "GOLD_OUNCE_USD"
+                };
+
+                if (mapping[code]) {
+                    add(mapping[code], value);
+                }
+            });
+        }
+
+
+        /*
+         * بعضی پاسخ‌های API ممکن است currencies داشته باشند
+         */
+        const currencies =
+            source.currencies ??
+            data.currencies;
+
+        if (currencies) {
+
+            function currency(code) {
+                const item = currencies[code];
+
+                if (!item) return;
+
+                const value =
+                    item.rate ??
+                    item.value ??
+                    item.price;
+
+                add(code + "_RLS", value);
             }
 
-        ];
+            currency("USD");
+            currency("EUR");
+            currency("GBP");
+            currency("AED");
+            currency("TRY");
+        }
+
+
+        /*
+         * اگر هیچ داده‌ای پیدا نشد،
+         * پاسخ خام را برای تشخیص نگه می‌داریم.
+         */
+        if (result.length === 0) {
+            return res.status(502).json({
+                error: "UNKNOWN_OANOR_FORMAT",
+                raw: data
+            });
+        }
 
 
         res.setHeader(
             "Cache-Control",
-            "s-maxage=300, stale-while-revalidate=60"
+            "s-maxage=60, stale-while-revalidate=300"
         );
 
-
-        return res.status(200).json(prices);
-
+        return res.status(200).json(result);
 
     } catch (error) {
 
-        console.error(
-            "MARKET API ERROR:",
-            error
-        );
-
+        console.error("OANOR ERROR:", error);
 
         return res.status(500).json({
-            error: "API_ERROR",
+            error: "OANOR_CONNECTION_ERROR",
             message: error.message
         });
     }
