@@ -528,3 +528,20 @@ body.light select option {
     }
 
 }
+.ticker {
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    cursor: grab;
+    scrollbar-width: none;
+}
+
+.ticker::-webkit-scrollbar {
+    display: none;
+}
+
+.ticker div {
+    width: max-content;
+    min-width: 100%;
+    padding: 10px 20px;
+}
