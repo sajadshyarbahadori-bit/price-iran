@@ -9,11 +9,11 @@ export default async function handler(req, res) {
         }
 
         const response = await fetch(
-            "https://api.servix.ir/price",
+            "https://servix.cc/api/v1/assets",
             {
                 method: "GET",
                 headers: {
-                    "Authorization": `Bearer ${apiKey}`,
+                    "X-API-Key": apiKey,
                     "Accept": "application/json"
                 },
                 cache: "no-store"
@@ -28,26 +28,31 @@ export default async function handler(req, res) {
             data = JSON.parse(text);
         } catch {
             return res.status(502).json({
-                error: "INVALID_SERVIX_RESPONSE",
-                raw: text
+                error: "INVALID_SERVIX_RESPONSE"
             });
         }
 
-        if (!response.ok) {
+        if (!response.ok || !Array.isArray(data)) {
             return res.status(response.status || 502).json({
                 error: "SERVIX_API_ERROR",
                 response: data
             });
         }
 
-        console.log("SERVIX RESPONSE:", data);
+        const prices = data.map(item => ({
+            code: item.code,
+            name: item.name || item.code,
+            value: Number(item.value),
+            businessTime: item.businessTime,
+            labelFa: item.labelFa
+        }));
 
-        return res.status(200).json({
-            success: true,
-            source: "SERVIX",
-            timestamp: new Date().toISOString(),
-            prices: data
-        });
+        res.setHeader(
+            "Cache-Control",
+            "s-maxage=60, stale-while-revalidate=300"
+        );
+
+        return res.status(200).json(prices);
 
     } catch (error) {
         console.error("SERVIX ERROR:", error);
