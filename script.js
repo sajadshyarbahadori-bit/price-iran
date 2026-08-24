@@ -10,7 +10,7 @@ let alerts = JSON.parse(
     localStorage.getItem("alerts") || "[]"
 );
 
-let countdownValue = 60;
+let countdownValue = 300;
 let autoUpdateEnabled = true;
 let isUpdating = false;
 
@@ -58,7 +58,6 @@ function percent(value) {
 
 async function updatePrices() {
 
-    // جلوگیری از چند درخواست همزمان
     if (isUpdating) {
         return;
     }
@@ -104,24 +103,15 @@ async function updatePrices() {
         if (!response.ok) {
 
             if (response.status === 429) {
-
-                throw new Error(
-                    "API_LIMIT"
-                );
+                throw new Error("API_LIMIT");
             }
 
             if (response.status === 401) {
-
-                throw new Error(
-                    "API_UNAUTHORIZED"
-                );
+                throw new Error("API_UNAUTHORIZED");
             }
 
             if (response.status === 403) {
-
-                throw new Error(
-                    "API_FORBIDDEN"
-                );
+                throw new Error("API_FORBIDDEN");
             }
 
             throw new Error(
@@ -137,7 +127,7 @@ async function updatePrices() {
 
 
         /* =========================
-           تبدیل پاسخ API
+           تشخیص فرمت پاسخ
         ========================= */
 
         let pricesArray = [];
@@ -251,7 +241,7 @@ async function updatePrices() {
         }
 
 
-        countdownValue = 60;
+        countdownValue = 300;
 
 
     } catch (error) {
@@ -313,7 +303,7 @@ async function updatePrices() {
 
 
 /* =========================
-   نمایش قیمت‌ها
+   نمایش قیمت
 ========================= */
 
 function showPrice(
@@ -388,7 +378,6 @@ function showPrice(
 
 
     if (!priceHistory[key]) {
-
         priceHistory[key] = [];
     }
 
@@ -438,12 +427,8 @@ function renderPrices(data) {
     /* نقره */
 
     if (
-        Number.isFinite(
-            data.SILVER_OUNCE_USD
-        ) &&
-        Number.isFinite(
-            data.USD_RLS
-        )
+        Number.isFinite(data.SILVER_OUNCE_USD) &&
+        Number.isFinite(data.USD_RLS)
     ) {
 
         const silver999 =
@@ -687,6 +672,7 @@ function updateMarketDashboard() {
         return;
     }
 
+
     const assets = [];
 
     const list = [
@@ -734,36 +720,29 @@ function updateMarketDashboard() {
     );
 
 
-    const gain =
-        assets[0];
-
-    const lose =
-        assets[assets.length - 1];
+    const gain = assets[0];
+    const lose = assets[assets.length - 1];
 
 
     if ($("topGainer")) {
-
         $("topGainer").textContent =
             gain.name;
     }
 
 
     if ($("topGainerPercent")) {
-
         $("topGainerPercent").textContent =
             percent(gain.change);
     }
 
 
     if ($("topLoser")) {
-
         $("topLoser").textContent =
             lose.name;
     }
 
 
     if ($("topLoserPercent")) {
-
         $("topLoserPercent").textContent =
             percent(lose.change);
     }
@@ -792,7 +771,6 @@ function updateMarketDashboard() {
 
 
     if ($("scoreBar")) {
-
         $("scoreBar").style.width =
             score + "%";
     }
@@ -863,7 +841,7 @@ function setupSearch() {
 
 
 /* =========================
-   تم
+   تم شب / روز
 ========================= */
 
 function setupTheme() {
@@ -875,9 +853,7 @@ function setupTheme() {
 
 
     const saved =
-        localStorage.getItem(
-            "theme"
-        );
+        localStorage.getItem("theme");
 
 
     if (saved === "light") {
@@ -994,9 +970,7 @@ function setupFavorites() {
                 () => {
 
                     if (
-                        favorites.includes(
-                            key
-                        )
+                        favorites.includes(key)
                     ) {
 
                         favorites =
@@ -1067,13 +1041,10 @@ function updateFavorites() {
 
 
         const div =
-            document.createElement(
-                "div"
-            );
+            document.createElement("div");
 
 
-        div.className =
-            "card";
+        div.className = "card";
 
 
         div.innerHTML = `
@@ -1137,9 +1108,7 @@ function updateHeatmap() {
 
 
             const div =
-                document.createElement(
-                    "div"
-                );
+                document.createElement("div");
 
 
             div.className =
@@ -1225,7 +1194,6 @@ function updateComparisonOptions() {
 
 
     if (two.options.length > 1) {
-
         two.selectedIndex = 1;
     }
 }
@@ -1367,10 +1335,8 @@ function setupCurrency() {
                     $("currencyAmount").value
                 );
 
-
             const type =
                 $("currencyType").value;
-
 
             const price =
                 currentPrices[type];
@@ -1543,9 +1509,7 @@ function updateAlerts() {
 
 
             const div =
-                document.createElement(
-                    "div"
-                );
+                document.createElement("div");
 
 
             div.className =
@@ -1585,9 +1549,7 @@ function updateAlerts() {
 
                 localStorage.setItem(
                     "alerts",
-                    JSON.stringify(
-                        alerts
-                    )
+                    JSON.stringify(alerts)
                 );
 
 
@@ -1670,9 +1632,7 @@ function updateChart() {
 
                 datasets: [{
                     label: "قیمت",
-
                     data: history,
-
                     tension: 0.35
                 }]
             },
@@ -1699,9 +1659,7 @@ function updateClock() {
 
     clock.textContent =
         new Date()
-            .toLocaleTimeString(
-                "fa-IR"
-            );
+            .toLocaleTimeString("fa-IR");
 }
 
 
@@ -1712,7 +1670,7 @@ setInterval(
 
 
 /* =========================
-   شمارش معکوس
+   شمارش معکوس ۵ دقیقه‌ای
 ========================= */
 
 setInterval(
@@ -1730,7 +1688,7 @@ setInterval(
             countdownValue <= 0
         ) {
 
-            countdownValue = 60;
+            countdownValue = 300;
 
             updatePrices();
         }
@@ -1764,7 +1722,11 @@ function setupRefresh() {
         "click",
         () => {
 
-            countdownValue = 60;
+            if (isUpdating) {
+                return;
+            }
+
+            countdownValue = 300;
 
             updatePrices();
         }
@@ -1783,6 +1745,10 @@ function setupSettings() {
 
 
     if (auto) {
+
+        autoUpdateEnabled =
+            auto.checked;
+
 
         auto.addEventListener(
             "change",
@@ -1839,7 +1805,7 @@ function setupSettings() {
 
 
 /* =========================
-   شروع
+   شروع سایت
 ========================= */
 
 document.addEventListener(
