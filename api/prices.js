@@ -1,21 +1,46 @@
 let cachedData = null;
 let cacheTime = 0;
+let rateLimitedUntil = 0;
 
-const CACHE_TIME = 5 * 60 * 1000; // 5 دقیقه
+const CACHE_TIME = 30 * 60 * 1000; // 30 دقیقه
+const RATE_LIMIT_COOLDOWN = 30 * 60 * 1000; // 30 دقیقه
 
 export default async function handler(req, res) {
 
     try {
 
-        // اگر کش هنوز معتبر است، بدون درخواست به Servix پاسخ بده
+        const now = Date.now();
+
+        // اگر Rate Limit فعال است
+        if (now < rateLimitedUntil) {
+
+            if (cachedData) {
+
+                res.setHeader(
+                    "X-Price-Cache",
+                    "RATE-LIMIT-CACHE"
+                );
+
+                return res.status(200).json(cachedData);
+            }
+
+            return res.status(429).json({
+                error: "RATE_LIMITED",
+                message:
+                    "Servix temporarily rate limited"
+            });
+        }
+
+
+        // اگر کش هنوز معتبر است
         if (
             cachedData &&
-            Date.now() - cacheTime < CACHE_TIME
+            now - cacheTime < CACHE_TIME
         ) {
 
             res.setHeader(
                 "Cache-Control",
-                "s-maxage=300, stale-while-revalidate=60"
+                "s-maxage=1800, stale-while-revalidate=300"
             );
 
             res.setHeader(
@@ -43,7 +68,6 @@ export default async function handler(req, res) {
             "https://servix.cc/api/v1/assets",
             {
                 method: "GET",
-
                 headers: {
                     "X-API-Key": apiKey,
                     "Accept": "application/json"
@@ -58,7 +82,6 @@ export default async function handler(req, res) {
 
         let data;
 
-
         try {
 
             data = JSON.parse(text);
@@ -72,7 +95,35 @@ export default async function handler(req, res) {
         }
 
 
-        // اگر Servix خطا داد
+        // Rate Limit
+        if (response.status === 429) {
+
+            rateLimitedUntil =
+                Date.now() +
+                RATE_LIMIT_COOLDOWN;
+
+
+            if (cachedData) {
+
+                res.setHeader(
+                    "X-Price-Cache",
+                    "STALE"
+                );
+
+                return res.status(200).json(
+                    cachedData
+                );
+            }
+
+
+            return res.status(429).json({
+                error: "RATE_LIMITED",
+                message:
+                    "Servix request limit reached"
+            });
+        }
+
+
         if (!response.ok) {
 
             return res.status(
@@ -81,16 +132,15 @@ export default async function handler(req, res) {
         }
 
 
-        // ذخیره پاسخ موفق
+        // ذخیره قیمت موفق
         cachedData = data;
         cacheTime = Date.now();
 
 
         res.setHeader(
             "Cache-Control",
-            "s-maxage=300, stale-while-revalidate=60"
+            "s-maxage=1800, stale-while-revalidate=300"
         );
-
 
         res.setHeader(
             "X-Price-Cache",
@@ -100,7 +150,6 @@ export default async function handler(req, res) {
 
         return res.status(200).json(data);
 
-
     } catch (error) {
 
         console.error(
@@ -109,13 +158,12 @@ export default async function handler(req, res) {
         );
 
 
-        // اگر Servix موقتاً مشکل داشت ولی
-        // قبلاً داده‌ای داریم، همان داده را بده
+        // اگر قبلاً قیمت داشتیم
         if (cachedData) {
 
             res.setHeader(
                 "X-Price-Cache",
-                "STALE"
+                "ERROR-CACHE"
             );
 
             return res.status(200).json(
