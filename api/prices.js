@@ -11,7 +11,6 @@ export default async function handler(req, res) {
         const response = await fetch(
             "https://servix.cc/api/v1/assets",
             {
-                method: "GET",
                 headers: {
                     "X-API-Key": apiKey,
                     "Accept": "application/json"
@@ -20,31 +19,11 @@ export default async function handler(req, res) {
             }
         );
 
-        const text = await response.text();
+        const data = await response.json();
 
-        let data;
-
-        try {
-            data = JSON.parse(text);
-        } catch {
-            return res.status(502).json({
-                error: "INVALID_SERVIX_RESPONSE",
-                raw: text
-            });
-        }
-
-        if (!response.ok) {
-            console.error("SERVIX API ERROR:", data);
-
+        if (!response.ok || !Array.isArray(data)) {
             return res.status(response.status || 502).json({
                 error: "SERVIX_API_ERROR",
-                response: data
-            });
-        }
-
-        if (!Array.isArray(data)) {
-            return res.status(502).json({
-                error: "SERVIX_RESPONSE_NOT_ARRAY",
                 response: data
             });
         }
@@ -54,7 +33,6 @@ export default async function handler(req, res) {
             name: item.name || item.code,
             value: Number(item.value),
             labelFa: item.labelFa,
-            labelEn: item.labelEn,
             businessTime: item.businessTime
         }));
 
@@ -66,12 +44,10 @@ export default async function handler(req, res) {
         return res.status(200).json(prices);
 
     } catch (error) {
-
-        console.error("SERVIX CONNECTION ERROR:", error);
+        console.error("SERVIX ERROR:", error);
 
         return res.status(500).json({
-            error: "SERVIX_CONNECTION_ERROR",
-            message: error.message
+            error: "SERVIX_CONNECTION_ERROR"
         });
     }
 }
