@@ -1,4 +1,3 @@
-```js
 let prices = {};
 let previousPrices = {};
 
@@ -12,18 +11,11 @@ let alerts = JSON.parse(
 
 let chart = null;
 
-
-/* =========================
-   تنظیمات بروزرسانی
-========================= */
-
 const AUTO_UPDATE_INTERVAL = 5 * 60 * 60 * 1000;
 
 let autoUpdateTimer = null;
 let countdownTimer = null;
-
-let nextUpdateTime =
-    Date.now() + AUTO_UPDATE_INTERVAL;
+let nextUpdateTime = 0;
 
 
 /* =========================
@@ -78,7 +70,7 @@ const elementMap = {
 
 
 /* =========================
-   ابزار قیمت
+   تبدیل ریال
 ========================= */
 
 function rial(value) {
@@ -106,9 +98,6 @@ async function updatePrices() {
     const apiStatus =
         document.getElementById("apiStatus");
 
-    const lastMessage =
-        document.getElementById("lastMessage");
-
     if (updateTime) {
         updateTime.textContent =
             "در حال دریافت قیمت‌ها...";
@@ -120,11 +109,6 @@ async function updatePrices() {
 
     try {
 
-        /*
-         * API دقیقاً همان API قبلی است.
-         * هیچ endpoint یا تنظیم API تغییر نکرده.
-         */
-
         const response = await fetch(
             "/api/prices?time=" + Date.now(),
             {
@@ -134,7 +118,6 @@ async function updatePrices() {
         );
 
         if (!response.ok) {
-
             throw new Error(
                 "API status: " +
                 response.status
@@ -144,44 +127,31 @@ async function updatePrices() {
         const apiResponse =
             await response.json();
 
-        console.log(
-            "API:",
-            apiResponse
-        );
-
-
-        /* =========================
-           پشتیبانی از دو نوع پاسخ
-        ========================= */
+        console.log("API:", apiResponse);
 
         const result =
             Array.isArray(apiResponse)
                 ? apiResponse
                 : apiResponse.prices;
 
-
         if (!Array.isArray(result)) {
-
             throw new Error(
                 "API response does not contain prices array"
             );
         }
 
 
-        /* =========================
-           ذخیره قیمت قبلی
-        ========================= */
+        /* قیمت قبلی */
 
         previousPrices = {
             ...prices
         };
 
+
         prices = {};
 
 
-        /* =========================
-           تبدیل داده‌ها
-        ========================= */
+        /* تبدیل قیمت‌ها */
 
         result.forEach(item => {
 
@@ -204,8 +174,8 @@ async function updatePrices() {
 
 
         /* =========================
-           قیمت‌های اصلی
-        ========================= */
+           کارت‌ها
+        ========================== */
 
         Object.entries(elementMap)
             .forEach(([id, key]) => {
@@ -229,10 +199,12 @@ async function updatePrices() {
 
         /* =========================
            اونس طلا
-        ========================= */
+        ========================== */
 
         const goldOunce =
-            document.getElementById("goldOunce");
+            document.getElementById(
+                "goldOunce"
+            );
 
         if (goldOunce) {
 
@@ -253,10 +225,12 @@ async function updatePrices() {
 
         /* =========================
            اونس نقره
-        ========================= */
+        ========================== */
 
         const silverOunce =
-            document.getElementById("silverOunce");
+            document.getElementById(
+                "silverOunce"
+            );
 
         if (silverOunce) {
 
@@ -277,7 +251,7 @@ async function updatePrices() {
 
         /* =========================
            محاسبات
-        ========================= */
+        ========================== */
 
         calculateSilver();
 
@@ -285,7 +259,7 @@ async function updatePrices() {
 
         updateDashboard(result);
 
-        renderHeatmap(result);
+        renderHeatmap();
 
         renderFavorites();
 
@@ -299,22 +273,28 @@ async function updatePrices() {
 
 
         /* =========================
-           وضعیت API
-        ========================= */
+           وضعیت
+        ========================== */
 
         if (apiStatus) {
             apiStatus.textContent = "🟢";
         }
-
 
         if (updateTime) {
 
             updateTime.textContent =
                 "آخرین بروزرسانی: " +
                 new Date()
-                    .toLocaleTimeString("fa-IR");
+                    .toLocaleTimeString(
+                        "fa-IR"
+                    );
         }
 
+
+        const lastMessage =
+            document.getElementById(
+                "lastMessage"
+            );
 
         if (lastMessage) {
 
@@ -324,11 +304,12 @@ async function updatePrices() {
 
 
         /*
-         * بعد از موفقیت، تایمر ۵ ساعته
-         * از همین لحظه دوباره شروع می‌شود.
+         * هر بار که بروزرسانی موفق شد،
+         * شمارنده را از نو برای ۵ ساعت تنظیم می‌کنیم.
          */
 
-        resetAutoUpdateTimer();
+        startAutoUpdate();
+
 
     } catch (error) {
 
@@ -345,36 +326,29 @@ async function updatePrices() {
 
         if (updateTime) {
 
-            if (
-                error.message.includes("429")
-            ) {
-
-                updateTime.textContent =
-                    "🟠 سهمیه روزانه Servix تمام شده";
-
-            } else {
-
-                updateTime.textContent =
-                    "❌ خطا در دریافت قیمت‌ها";
-            }
+            updateTime.textContent =
+                "❌ خطا در دریافت قیمت‌ها";
         }
 
+
+        const lastMessage =
+            document.getElementById(
+                "lastMessage"
+            );
 
         if (lastMessage) {
 
-            if (
-                error.message.includes("429")
-            ) {
-
-                lastMessage.textContent =
-                    "🟠 سهمیه امروز Servix تمام شده";
-
-            } else {
-
-                lastMessage.textContent =
-                    "❌ دریافت قیمت‌ها ناموفق بود";
-            }
+            lastMessage.textContent =
+                "❌ دریافت قیمت‌ها ناموفق بود";
         }
+
+
+        /*
+         * اگر درخواست شکست خورد،
+         * شمارنده متوقف نمی‌شود.
+         */
+
+        startAutoUpdate();
     }
 }
 
@@ -441,7 +415,7 @@ function updateChange(id, key) {
 
 
 /* =========================
-   محاسبه نقره
+   نقره
 ========================= */
 
 function calculateSilver() {
@@ -473,13 +447,19 @@ function calculateSilver() {
         silver999 * 1000;
 
     const s999 =
-        document.getElementById("silver999");
+        document.getElementById(
+            "silver999"
+        );
 
     const s925 =
-        document.getElementById("silver925");
+        document.getElementById(
+            "silver925"
+        );
 
     const skg =
-        document.getElementById("silverKg");
+        document.getElementById(
+            "silverKg"
+        );
 
     if (s999) {
         s999.textContent =
@@ -499,7 +479,7 @@ function calculateSilver() {
 
 
 /* =========================
-   حباب طلا
+   حباب
 ========================= */
 
 function calculateBubble() {
@@ -561,19 +541,16 @@ function calculateBubble() {
         );
 
     if (calculatedElement) {
-
         calculatedElement.textContent =
             rial(calculated);
     }
 
     if (bubbleElement) {
-
         bubbleElement.textContent =
             rial(bubble);
     }
 
     if (percentElement) {
-
         percentElement.textContent =
             percent.toFixed(2) +
             "%";
@@ -601,123 +578,6 @@ function calculateBubble() {
 
 
 /* =========================
-   نقشه حرارتی بازار
-========================= */
-
-function renderHeatmap(result) {
-
-    const container =
-        document.getElementById("heatmap");
-
-    if (!container) {
-        return;
-    }
-
-    container.innerHTML = "";
-
-    const items =
-        result.filter(item => {
-
-            return (
-                item &&
-                item.code &&
-                Number.isFinite(
-                    Number(item.change_pct)
-                ) &&
-                Number.isFinite(
-                    prices[item.code]
-                )
-            );
-        });
-
-
-    if (!items.length) {
-
-        container.innerHTML = `
-            <div class="heatmap-empty">
-                داده‌ای برای نمایش نقشه بازار وجود ندارد
-            </div>
-        `;
-
-        return;
-    }
-
-
-    items.sort(
-        (a, b) =>
-            Number(b.change_pct) -
-            Number(a.change_pct)
-    );
-
-
-    items.forEach(item => {
-
-        const change =
-            Number(item.change_pct);
-
-        const box =
-            document.createElement("div");
-
-        box.className =
-            "heatmap-item";
-
-
-        if (change > 0) {
-
-            box.classList.add(
-                "positive"
-            );
-
-        } else if (change < 0) {
-
-            box.classList.add(
-                "negative"
-            );
-
-        } else {
-
-            box.classList.add(
-                "neutral"
-            );
-        }
-
-
-        const name =
-            assetNames[item.code] ||
-            item.name ||
-            item.code;
-
-
-        const arrow =
-            change > 0
-                ? "▲"
-                : change < 0
-                    ? "▼"
-                    : "━";
-
-
-        box.innerHTML = `
-            <strong>
-                ${name}
-            </strong>
-
-            <span>
-                ${arrow}
-                ${Math.abs(change).toFixed(2)}%
-            </span>
-
-            <small>
-                ${rial(prices[item.code])}
-            </small>
-        `;
-
-
-        container.appendChild(box);
-    });
-}
-
-
-/* =========================
    علاقه‌مندی‌ها
 ========================= */
 
@@ -734,12 +594,14 @@ function renderFavorites() {
 
     container.innerHTML = "";
 
-
     if (!favorites.length) {
 
         container.innerHTML = `
-            <div class="result">
-                ⭐ هنوز دارایی‌ای به علاقه‌مندی‌ها اضافه نکرده‌ای
+            <div class="card">
+                <span>⭐ هنوز چیزی اضافه نکردی</span>
+                <small>
+                    روی ☆ کنار دارایی‌ها بزن
+                </small>
             </div>
         `;
 
@@ -747,14 +609,16 @@ function renderFavorites() {
 
         favorites.forEach(key => {
 
+            const apiKey =
+                elementMap[key] || key;
+
             if (
                 !Number.isFinite(
-                    prices[key]
+                    prices[apiKey]
                 )
             ) {
                 return;
             }
-
 
             const card =
                 document.createElement(
@@ -764,21 +628,19 @@ function renderFavorites() {
             card.className =
                 "card";
 
-
             card.innerHTML = `
                 <span>
-                    ⭐ ${assetNames[key] || key}
+                    ⭐ ${assetNames[apiKey] || apiKey}
                 </span>
 
                 <h3>
-                    ${rial(prices[key])}
+                    ${rial(prices[apiKey])}
                 </h3>
 
                 <small>
-                    ${getFavoriteChange(key)}
+                    مورد علاقه
                 </small>
             `;
-
 
             container.appendChild(card);
         });
@@ -800,53 +662,6 @@ function renderFavorites() {
 }
 
 
-function getFavoriteChange(key) {
-
-    const current =
-        prices[key];
-
-    const previous =
-        previousPrices[key];
-
-
-    if (
-        !Number.isFinite(current) ||
-        !Number.isFinite(previous) ||
-        previous === 0
-    ) {
-        return "--";
-    }
-
-
-    const percent =
-        (
-            (current - previous) /
-            previous
-        ) * 100;
-
-
-    if (percent > 0) {
-
-        return (
-            "▲ +" +
-            percent.toFixed(2) +
-            "%"
-        );
-
-    } else if (percent < 0) {
-
-        return (
-            "▼ " +
-            percent.toFixed(2) +
-            "%"
-        );
-    }
-
-
-    return "━ 0%";
-}
-
-
 document.addEventListener(
     "click",
     event => {
@@ -860,10 +675,8 @@ document.addEventListener(
             return;
         }
 
-
         const key =
             button.dataset.key;
-
 
         if (favorites.includes(key)) {
 
@@ -878,12 +691,10 @@ document.addEventListener(
             favorites.push(key);
         }
 
-
         localStorage.setItem(
             "favorites",
             JSON.stringify(favorites)
         );
-
 
         renderFavorites();
     }
@@ -891,12 +702,128 @@ document.addEventListener(
 
 
 /* =========================
+   نقشه حرارتی بازار
+========================= */
+
+function renderHeatmap() {
+
+    const container =
+        document.getElementById(
+            "heatmap"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = "";
+
+    const keys = Object.keys(
+        prices
+    );
+
+    if (!keys.length) {
+
+        container.innerHTML = `
+            <div class="card">
+                در انتظار اطلاعات بازار...
+            </div>
+        `;
+
+        return;
+    }
+
+
+    keys.forEach(key => {
+
+        const current =
+            prices[key];
+
+        const previous =
+            previousPrices[key];
+
+        let change = 0;
+
+        if (
+            Number.isFinite(current) &&
+            Number.isFinite(previous) &&
+            previous !== 0
+        ) {
+
+            change =
+                (
+                    (current - previous) /
+                    previous
+                ) * 100;
+        }
+
+
+        const tile =
+            document.createElement(
+                "div"
+            );
+
+        tile.className =
+            "heatmap-item";
+
+
+        if (change > 0) {
+
+            tile.classList.add(
+                "heat-up"
+            );
+
+        } else if (change < 0) {
+
+            tile.classList.add(
+                "heat-down"
+            );
+
+        } else {
+
+            tile.classList.add(
+                "heat-neutral"
+            );
+        }
+
+
+        tile.innerHTML = `
+            <strong>
+                ${assetNames[key] || key}
+            </strong>
+
+            <span>
+                ${rial(current)}
+            </span>
+
+            <b>
+                ${
+                    change > 0
+                        ? "▲ +"
+                        : change < 0
+                            ? "▼ "
+                            : "━ "
+                }
+                ${Math.abs(change).toFixed(2)}%
+            </b>
+        `;
+
+
+        container.appendChild(
+            tile
+        );
+    });
+}
+
+
+/* =========================
    جستجو
 ========================= */
 
 const search =
-    document.getElementById("search");
-
+    document.getElementById(
+        "search"
+    );
 
 if (search) {
 
@@ -909,7 +836,6 @@ if (search) {
                     .trim()
                     .toLowerCase();
 
-
             document.querySelectorAll(
                 ".card"
             ).forEach(card => {
@@ -917,7 +843,6 @@ if (search) {
                 const name =
                     card.dataset.name ||
                     card.textContent;
-
 
                 card.style.display =
                     !query ||
@@ -933,14 +858,13 @@ if (search) {
 
 
 /* =========================
-   حالت شب / روز
+   تم
 ========================= */
 
 const themeButton =
     document.getElementById(
         "themeButton"
     );
-
 
 function applyTheme() {
 
@@ -949,12 +873,10 @@ function applyTheme() {
             "lightMode"
         ) === "1";
 
-
     document.body.classList.toggle(
         "light",
         light
     );
-
 
     if (themeButton) {
 
@@ -964,7 +886,6 @@ function applyTheme() {
                 : "☀️";
     }
 }
-
 
 if (themeButton) {
 
@@ -977,7 +898,6 @@ if (themeButton) {
                     .classList
                     .contains("light");
 
-
             localStorage.setItem(
                 "lightMode",
                 isLight
@@ -985,18 +905,16 @@ if (themeButton) {
                     : "1"
             );
 
-
             applyTheme();
         }
     );
 }
 
-
 applyTheme();
 
 
 /* =========================
-   انتخاب‌ها
+   Select ها
 ========================= */
 
 function populateSelects() {
@@ -1016,20 +934,16 @@ function populateSelects() {
         )
     ];
 
-
     selects.forEach(select => {
 
         if (!select) {
             return;
         }
 
-
         const current =
             select.value;
 
-
         select.innerHTML = "";
-
 
         Object.keys(prices)
             .forEach(key => {
@@ -1039,21 +953,16 @@ function populateSelects() {
                         "option"
                     );
 
-
-                option.value =
-                    key;
-
+                option.value = key;
 
                 option.textContent =
                     assetNames[key] ||
                     key;
 
-
                 select.appendChild(
                     option
                 );
             });
-
 
         if (
             current &&
@@ -1076,7 +985,6 @@ const compareButton =
         "compareButton"
     );
 
-
 if (compareButton) {
 
     compareButton.addEventListener(
@@ -1088,18 +996,15 @@ if (compareButton) {
                     "compareOne"
                 )?.value;
 
-
             const two =
                 document.getElementById(
                     "compareTwo"
                 )?.value;
 
-
             const result =
                 document.getElementById(
                     "comparisonResult"
                 );
-
 
             if (
                 !one ||
@@ -1108,7 +1013,6 @@ if (compareButton) {
             ) {
                 return;
             }
-
 
             if (
                 !Number.isFinite(
@@ -1125,11 +1029,9 @@ if (compareButton) {
                 return;
             }
 
-
             const difference =
                 prices[one] -
                 prices[two];
-
 
             result.textContent =
                 `${assetNames[one] || one}
@@ -1151,7 +1053,6 @@ const calculateGoldButton =
         "calculateGold"
     );
 
-
 if (calculateGoldButton) {
 
     calculateGoldButton.addEventListener(
@@ -1165,7 +1066,6 @@ if (calculateGoldButton) {
                     )?.value
                 );
 
-
             const karat =
                 Number(
                     document.getElementById(
@@ -1173,12 +1073,10 @@ if (calculateGoldButton) {
                     )?.value
                 );
 
-
             const result =
                 document.getElementById(
                     "calculatorResult"
                 );
-
 
             if (
                 !weight ||
@@ -1195,12 +1093,10 @@ if (calculateGoldButton) {
                 return;
             }
 
-
             const key =
                 karat === 24
                     ? "GOLD_24_RLS"
                     : "GOLD_18_RLS";
-
 
             if (
                 !Number.isFinite(
@@ -1213,7 +1109,6 @@ if (calculateGoldButton) {
 
                 return;
             }
-
 
             result.textContent =
                 rial(
@@ -1234,7 +1129,6 @@ const convertCurrency =
         "convertCurrency"
     );
 
-
 if (convertCurrency) {
 
     convertCurrency.addEventListener(
@@ -1248,18 +1142,15 @@ if (convertCurrency) {
                     )?.value
                 );
 
-
             const type =
                 document.getElementById(
                     "currencyType"
                 )?.value;
 
-
             const result =
                 document.getElementById(
                     "currencyResult"
                 );
-
 
             if (
                 !amount ||
@@ -1276,10 +1167,8 @@ if (convertCurrency) {
                 return;
             }
 
-
             const rate =
                 prices[type];
-
 
             if (!Number.isFinite(rate)) {
 
@@ -1288,7 +1177,6 @@ if (convertCurrency) {
 
                 return;
             }
-
 
             result.textContent =
                 rial(
@@ -1308,7 +1196,6 @@ const scenarioButton =
         "scenarioButton"
     );
 
-
 if (scenarioButton) {
 
     scenarioButton.addEventListener(
@@ -1322,7 +1209,6 @@ if (scenarioButton) {
                     )?.value
                 );
 
-
             const ounce =
                 Number(
                     document.getElementById(
@@ -1330,12 +1216,10 @@ if (scenarioButton) {
                     )?.value
                 );
 
-
             const result =
                 document.getElementById(
                     "scenarioResult"
                 );
-
 
             if (
                 !Number.isFinite(dollar) ||
@@ -1350,7 +1234,6 @@ if (scenarioButton) {
                 return;
             }
 
-
             const calculated =
                 (
                     ounce /
@@ -1358,7 +1241,6 @@ if (scenarioButton) {
                 ) *
                 dollar *
                 0.75;
-
 
             result.textContent =
                 "قیمت فرضی طلای ۱۸: " +
@@ -1369,14 +1251,13 @@ if (scenarioButton) {
 
 
 /* =========================
-   هشدار قیمت
+   هشدار
 ========================= */
 
 const setAlert =
     document.getElementById(
         "setAlert"
     );
-
 
 if (setAlert) {
 
@@ -1389,14 +1270,12 @@ if (setAlert) {
                     "alertAsset"
                 )?.value;
 
-
             const target =
                 Number(
                     document.getElementById(
                         "alertPrice"
                     )?.value
                 );
-
 
             if (
                 !asset ||
@@ -1406,18 +1285,15 @@ if (setAlert) {
                 return;
             }
 
-
             alerts.push({
                 asset,
                 target
             });
 
-
             localStorage.setItem(
                 "alerts",
                 JSON.stringify(alerts)
             );
-
 
             renderAlerts();
         }
@@ -1432,14 +1308,11 @@ function renderAlerts() {
             "alertsList"
         );
 
-
     if (!container) {
         return;
     }
 
-
     container.innerHTML = "";
-
 
     alerts.forEach(
         (alert, index) => {
@@ -1449,10 +1322,8 @@ function renderAlerts() {
                     "div"
                 );
 
-
             item.className =
                 "result";
-
 
             item.innerHTML = `
                 ${assetNames[alert.asset] || alert.asset}
@@ -1466,8 +1337,9 @@ function renderAlerts() {
                 </button>
             `;
 
-
-            container.appendChild(item);
+            container.appendChild(
+                item
+            );
         }
     );
 }
@@ -1481,12 +1353,10 @@ window.removeAlert =
             1
         );
 
-
         localStorage.setItem(
             "alerts",
             JSON.stringify(alerts)
         );
-
 
         renderAlerts();
     };
@@ -1498,7 +1368,6 @@ function checkAlerts() {
 
         const current =
             prices[alert.asset];
-
 
         if (
             Number.isFinite(current) &&
@@ -1523,13 +1392,11 @@ const chartSelect =
         "chartSelect"
     );
 
-
 function updateChart() {
 
     if (!chartSelect) {
         return;
     }
-
 
     const key =
         elementMap[
@@ -1537,12 +1404,10 @@ function updateChart() {
         ] ||
         chartSelect.value;
 
-
     const canvas =
         document.getElementById(
             "priceChart"
         );
-
 
     if (
         !canvas ||
@@ -1553,11 +1418,9 @@ function updateChart() {
         return;
     }
 
-
     if (chart) {
         chart.destroy();
     }
-
 
     chart =
         new Chart(
@@ -1614,7 +1477,6 @@ const mainRefresh =
         "mainRefresh"
     );
 
-
 if (mainRefresh) {
 
     mainRefresh.addEventListener(
@@ -1624,17 +1486,13 @@ if (mainRefresh) {
             mainRefresh.disabled =
                 true;
 
-
             mainRefresh.textContent =
                 "⏳ در حال بروزرسانی...";
 
-
             await updatePrices();
-
 
             mainRefresh.disabled =
                 false;
-
 
             mainRefresh.textContent =
                 "🔄 بروزرسانی قیمت‌ها";
@@ -1654,11 +1512,9 @@ function updateClock() {
             "clock"
         );
 
-
     if (!clock) {
         return;
     }
-
 
     clock.textContent =
         new Date()
@@ -1667,44 +1523,33 @@ function updateClock() {
             );
 }
 
-
 setInterval(
     updateClock,
     1000
 );
 
-
 updateClock();
 
 
 /* =========================
-   بروزرسانی خودکار
+   بروزرسانی خودکار ۵ ساعته
 ========================= */
-
-const autoUpdate =
-    document.getElementById(
-        "autoUpdate"
-    );
-
 
 function startAutoUpdate() {
 
     stopAutoUpdate();
 
-
     nextUpdateTime =
         Date.now() +
         AUTO_UPDATE_INTERVAL;
 
-
     updateCountdown();
 
-
     autoUpdateTimer =
-        setInterval(
-            () => {
+        setTimeout(
+            async () => {
 
-                updatePrices();
+                await updatePrices();
 
             },
             AUTO_UPDATE_INTERVAL
@@ -1716,7 +1561,7 @@ function stopAutoUpdate() {
 
     if (autoUpdateTimer) {
 
-        clearInterval(
+        clearTimeout(
             autoUpdateTimer
         );
 
@@ -1725,24 +1570,9 @@ function stopAutoUpdate() {
 }
 
 
-function resetAutoUpdateTimer() {
-
-    if (
-        autoUpdate &&
-        !autoUpdate.checked
-    ) {
-        return;
-    }
-
-
-    nextUpdateTime =
-        Date.now() +
-        AUTO_UPDATE_INTERVAL;
-
-
-    updateCountdown();
-}
-
+/* =========================
+   شمارش معکوس
+========================= */
 
 function updateCountdown() {
 
@@ -1751,11 +1581,17 @@ function updateCountdown() {
             "countdown"
         );
 
-
     if (!countdown) {
         return;
     }
 
+    if (!nextUpdateTime) {
+
+        countdown.textContent =
+            "05:00:00";
+
+        return;
+    }
 
     const remaining =
         Math.max(
@@ -1764,12 +1600,10 @@ function updateCountdown() {
             Date.now()
         );
 
-
     const totalSeconds =
         Math.floor(
             remaining / 1000
         );
-
 
     const hours =
         Math.floor(
@@ -1778,35 +1612,42 @@ function updateCountdown() {
 
     const minutes =
         Math.floor(
-            (totalSeconds % 3600) / 60
+            (totalSeconds % 3600) /
+            60
         );
 
     const seconds =
         totalSeconds % 60;
 
-
     countdown.textContent =
-        `${String(hours).padStart(2, "0")}:` +
-        `${String(minutes).padStart(2, "0")}:` +
-        `${String(seconds).padStart(2, "0")}`;
-
-
-    const countdownUnit =
-        countdown.nextElementSibling;
-
-
-    if (countdownUnit) {
-
-        countdownUnit.textContent =
-            "تا بروزرسانی بعدی";
-    }
+        String(hours).padStart(2, "0") +
+        ":" +
+        String(minutes).padStart(2, "0") +
+        ":" +
+        String(seconds).padStart(2, "0");
 }
+
+
+countdownTimer =
+    setInterval(
+        updateCountdown,
+        1000
+    );
+
+
+/* =========================
+   تنظیمات
+========================= */
+
+const autoUpdate =
+    document.getElementById(
+        "autoUpdate"
+    );
 
 
 if (autoUpdate) {
 
     autoUpdate.checked = true;
-
 
     autoUpdate.addEventListener(
         "change",
@@ -1820,12 +1661,15 @@ if (autoUpdate) {
 
                 stopAutoUpdate();
 
+                nextUpdateTime = 0;
+
                 const countdown =
                     document.getElementById(
                         "countdown"
                     );
 
                 if (countdown) {
+
                     countdown.textContent =
                         "--";
                 }
@@ -1843,7 +1687,6 @@ const dashboardMode =
     document.getElementById(
         "dashboardMode"
     );
-
 
 if (dashboardMode) {
 
@@ -1869,7 +1712,6 @@ const priceAnimation =
         "priceAnimation"
     );
 
-
 if (priceAnimation) {
 
     priceAnimation.addEventListener(
@@ -1892,7 +1734,6 @@ if (priceAnimation) {
 function updateDashboard(result) {
 
     const changes = [];
-
 
     result.forEach(item => {
 
@@ -1946,18 +1787,15 @@ function updateDashboard(result) {
             "topGainer"
         );
 
-
     const topGainerPercent =
         document.getElementById(
             "topGainerPercent"
         );
 
-
     const topLoser =
         document.getElementById(
             "topLoser"
         );
-
 
     const topLoserPercent =
         document.getElementById(
@@ -1966,31 +1804,28 @@ function updateDashboard(result) {
 
 
     if (topGainer) {
-
         topGainer.textContent =
             top.name;
     }
 
-
     if (topGainerPercent) {
 
         topGainerPercent.textContent =
-            "+" +
+            (top.change >= 0 ? "+" : "") +
             top.change.toFixed(2) +
             "%";
     }
 
 
     if (topLoser) {
-
         topLoser.textContent =
             bottom.name;
     }
 
-
     if (topLoserPercent) {
 
         topLoserPercent.textContent =
+            (bottom.change >= 0 ? "+" : "") +
             bottom.change.toFixed(2) +
             "%";
     }
@@ -2021,12 +1856,10 @@ function updateDashboard(result) {
             "marketScore"
         );
 
-
     const marketMood =
         document.getElementById(
             "marketMood"
         );
-
 
     const scoreBar =
         document.getElementById(
@@ -2081,28 +1914,16 @@ applyTheme();
 
 updateClock();
 
-updateCountdown();
 
 /*
- * یک بار هنگام باز شدن سایت قیمت‌ها را می‌گیریم
- * تا Heatmap، علاقه‌مندی‌ها و بقیه بخش‌ها داده داشته باشند.
+ * اولین دریافت قیمت
  */
 
 updatePrices();
 
+
 /*
- * بعد از هر موفقیت، تایمر ۵ ساعت از نو شروع می‌شود.
+ * شروع شمارش معکوس ۵ ساعته
  */
 
 startAutoUpdate();
-
-/*
- * شمارنده هر ثانیه آپدیت می‌شود.
- */
-
-countdownTimer =
-    setInterval(
-        updateCountdown,
-        1000
-    );
-```
