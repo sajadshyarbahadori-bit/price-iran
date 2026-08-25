@@ -70,7 +70,7 @@ const elementMap = {
 
 
 /* =========================
-   تبدیل ریال
+   ابزار قیمت
 ========================= */
 
 function rial(value) {
@@ -118,6 +118,7 @@ async function updatePrices() {
         );
 
         if (!response.ok) {
+
             throw new Error(
                 "API status: " +
                 response.status
@@ -127,7 +128,10 @@ async function updatePrices() {
         const apiResponse =
             await response.json();
 
-        console.log("API:", apiResponse);
+        console.log(
+            "API:",
+            apiResponse
+        );
 
         const result =
             Array.isArray(apiResponse)
@@ -135,23 +139,17 @@ async function updatePrices() {
                 : apiResponse.prices;
 
         if (!Array.isArray(result)) {
+
             throw new Error(
                 "API response does not contain prices array"
             );
         }
 
-
-        /* قیمت قبلی */
-
         previousPrices = {
             ...prices
         };
 
-
         prices = {};
-
-
-        /* تبدیل قیمت‌ها */
 
         result.forEach(item => {
 
@@ -173,9 +171,7 @@ async function updatePrices() {
         });
 
 
-        /* =========================
-           کارت‌ها
-        ========================== */
+        /* قیمت‌های اصلی */
 
         Object.entries(elementMap)
             .forEach(([id, key]) => {
@@ -197,9 +193,7 @@ async function updatePrices() {
             });
 
 
-        /* =========================
-           اونس طلا
-        ========================== */
+        /* اونس طلا */
 
         const goldOunce =
             document.getElementById(
@@ -223,9 +217,7 @@ async function updatePrices() {
         }
 
 
-        /* =========================
-           اونس نقره
-        ========================== */
+        /* اونس نقره */
 
         const silverOunce =
             document.getElementById(
@@ -249,9 +241,7 @@ async function updatePrices() {
         }
 
 
-        /* =========================
-           محاسبات
-        ========================== */
+        /* محاسبات */
 
         calculateSilver();
 
@@ -272,9 +262,7 @@ async function updatePrices() {
         updateChart();
 
 
-        /* =========================
-           وضعیت
-        ========================== */
+        /* وضعیت */
 
         if (apiStatus) {
             apiStatus.textContent = "🟢";
@@ -290,7 +278,6 @@ async function updatePrices() {
                     );
         }
 
-
         const lastMessage =
             document.getElementById(
                 "lastMessage"
@@ -304,12 +291,11 @@ async function updatePrices() {
 
 
         /*
-         * هر بار که بروزرسانی موفق شد،
-         * شمارنده را از نو برای ۵ ساعت تنظیم می‌کنیم.
-         */
+            بعد از هر بروزرسانی موفق،
+            تایمر ۵ ساعته از نو شروع می‌شود.
+        */
 
         startAutoUpdate();
-
 
     } catch (error) {
 
@@ -318,18 +304,25 @@ async function updatePrices() {
             error
         );
 
-
         if (apiStatus) {
             apiStatus.textContent = "🔴";
         }
 
-
         if (updateTime) {
 
-            updateTime.textContent =
-                "❌ خطا در دریافت قیمت‌ها";
-        }
+            if (
+                error.message.includes("429")
+            ) {
 
+                updateTime.textContent =
+                    "🟠 سهمیه روزانه تمام شده";
+
+            } else {
+
+                updateTime.textContent =
+                    "❌ خطا در دریافت قیمت‌ها";
+            }
+        }
 
         const lastMessage =
             document.getElementById(
@@ -338,17 +331,19 @@ async function updatePrices() {
 
         if (lastMessage) {
 
-            lastMessage.textContent =
-                "❌ دریافت قیمت‌ها ناموفق بود";
+            if (
+                error.message.includes("429")
+            ) {
+
+                lastMessage.textContent =
+                    "🟠 سهمیه امروز تمام شده";
+
+            } else {
+
+                lastMessage.textContent =
+                    "❌ دریافت قیمت‌ها ناموفق بود";
+            }
         }
-
-
-        /*
-         * اگر درخواست شکست خورد،
-         * شمارنده متوقف نمی‌شود.
-         */
-
-        startAutoUpdate();
     }
 }
 
@@ -415,7 +410,7 @@ function updateChange(id, key) {
 
 
 /* =========================
-   نقره
+   محاسبه نقره
 ========================= */
 
 function calculateSilver() {
@@ -479,7 +474,7 @@ function calculateSilver() {
 
 
 /* =========================
-   حباب
+   حباب طلا
 ========================= */
 
 function calculateBubble() {
@@ -541,16 +536,19 @@ function calculateBubble() {
         );
 
     if (calculatedElement) {
+
         calculatedElement.textContent =
             rial(calculated);
     }
 
     if (bubbleElement) {
+
         bubbleElement.textContent =
             rial(bubble);
     }
 
     if (percentElement) {
+
         percentElement.textContent =
             percent.toFixed(2) +
             "%";
@@ -594,58 +592,45 @@ function renderFavorites() {
 
     container.innerHTML = "";
 
-    if (!favorites.length) {
+    favorites.forEach(key => {
 
-        container.innerHTML = `
-            <div class="card">
-                <span>⭐ هنوز چیزی اضافه نکردی</span>
-                <small>
-                    روی ☆ کنار دارایی‌ها بزن
-                </small>
-            </div>
+        if (
+            !Number.isFinite(
+                prices[key]
+            )
+        ) {
+            return;
+        }
+
+        const card =
+            document.createElement(
+                "div"
+            );
+
+        card.className =
+            "card";
+
+        card.innerHTML = `
+            <span>
+                ⭐ ${assetNames[key] || key}
+            </span>
+
+            <h3>
+                ${rial(prices[key])}
+            </h3>
+
+            <small>
+                قیمت فعلی
+            </small>
         `;
 
-    } else {
+        container.appendChild(card);
+    });
 
-        favorites.forEach(key => {
 
-            const apiKey =
-                elementMap[key] || key;
-
-            if (
-                !Number.isFinite(
-                    prices[apiKey]
-                )
-            ) {
-                return;
-            }
-
-            const card =
-                document.createElement(
-                    "div"
-                );
-
-            card.className =
-                "card";
-
-            card.innerHTML = `
-                <span>
-                    ⭐ ${assetNames[apiKey] || apiKey}
-                </span>
-
-                <h3>
-                    ${rial(prices[apiKey])}
-                </h3>
-
-                <small>
-                    مورد علاقه
-                </small>
-            `;
-
-            container.appendChild(card);
-        });
-    }
-
+    /*
+       ستاره‌های کارت‌ها
+    */
 
     document.querySelectorAll(
         ".favorite"
@@ -659,6 +644,23 @@ function renderFavorites() {
                 ? "★"
                 : "☆";
     });
+
+
+    /*
+       اگر علاقه‌مندی خالی باشد
+    */
+
+    if (!favorites.length) {
+
+        container.innerHTML = `
+            <div class="card">
+                <span>⭐ هنوز دارایی‌ای اضافه نکردی</span>
+                <small>
+                    روی ☆ کنار دارایی‌ها بزن
+                </small>
+            </div>
+        `;
+    }
 }
 
 
@@ -677,6 +679,10 @@ document.addEventListener(
 
         const key =
             button.dataset.key;
+
+        if (!key) {
+            return;
+        }
 
         if (favorites.includes(key)) {
 
@@ -718,9 +724,8 @@ function renderHeatmap() {
 
     container.innerHTML = "";
 
-    const keys = Object.keys(
-        prices
-    );
+    const keys =
+        Object.keys(prices);
 
     if (!keys.length) {
 
@@ -733,7 +738,6 @@ function renderHeatmap() {
         return;
     }
 
-
     keys.forEach(key => {
 
         const current =
@@ -743,6 +747,13 @@ function renderHeatmap() {
             previousPrices[key];
 
         let change = 0;
+
+        /*
+           اگر change_pct از API وجود داشته باشد،
+           برای Heatmap از همان استفاده می‌کنیم.
+           در غیر این صورت تغییر بین دو دریافت
+           محاسبه می‌شود.
+        */
 
         if (
             Number.isFinite(current) &&
@@ -757,37 +768,36 @@ function renderHeatmap() {
                 ) * 100;
         }
 
-
-        const tile =
+        const item =
             document.createElement(
                 "div"
             );
 
-        tile.className =
+        item.className =
             "heatmap-item";
 
 
         if (change > 0) {
 
-            tile.classList.add(
+            item.classList.add(
                 "heat-up"
             );
 
         } else if (change < 0) {
 
-            tile.classList.add(
+            item.classList.add(
                 "heat-down"
             );
 
         } else {
 
-            tile.classList.add(
+            item.classList.add(
                 "heat-neutral"
             );
         }
 
 
-        tile.innerHTML = `
+        item.innerHTML = `
             <strong>
                 ${assetNames[key] || key}
             </strong>
@@ -803,15 +813,11 @@ function renderHeatmap() {
                         : change < 0
                             ? "▼ "
                             : "━ "
-                }
-                ${Math.abs(change).toFixed(2)}%
+                }${Math.abs(change).toFixed(2)}%
             </b>
         `;
 
-
-        container.appendChild(
-            tile
-        );
+        container.appendChild(item);
     });
 }
 
@@ -858,7 +864,7 @@ if (search) {
 
 
 /* =========================
-   تم
+   حالت شب / روز
 ========================= */
 
 const themeButton =
@@ -914,7 +920,7 @@ applyTheme();
 
 
 /* =========================
-   Select ها
+   انتخاب‌ها
 ========================= */
 
 function populateSelects() {
@@ -953,7 +959,8 @@ function populateSelects() {
                         "option"
                     );
 
-                option.value = key;
+                option.value =
+                    key;
 
                 option.textContent =
                     assetNames[key] ||
@@ -1251,7 +1258,7 @@ if (scenarioButton) {
 
 
 /* =========================
-   هشدار
+   هشدار قیمت
 ========================= */
 
 const setAlert =
@@ -1337,9 +1344,7 @@ function renderAlerts() {
                 </button>
             `;
 
-            container.appendChild(
-                item
-            );
+            container.appendChild(item);
         }
     );
 }
@@ -1392,6 +1397,7 @@ const chartSelect =
         "chartSelect"
     );
 
+
 function updateChart() {
 
     if (!chartSelect) {
@@ -1399,9 +1405,6 @@ function updateChart() {
     }
 
     const key =
-        elementMap[
-            chartSelect.value
-        ] ||
         chartSelect.value;
 
     const canvas =
@@ -1535,15 +1538,25 @@ updateClock();
    بروزرسانی خودکار ۵ ساعته
 ========================= */
 
+const autoUpdate =
+    document.getElementById(
+        "autoUpdate"
+    );
+
+
 function startAutoUpdate() {
 
-    stopAutoUpdate();
+    if (autoUpdate && !autoUpdate.checked) {
+        return;
+    }
+
+    if (autoUpdateTimer) {
+        clearTimeout(autoUpdateTimer);
+    }
 
     nextUpdateTime =
         Date.now() +
         AUTO_UPDATE_INTERVAL;
-
-    updateCountdown();
 
     autoUpdateTimer =
         setTimeout(
@@ -1554,6 +1567,8 @@ function startAutoUpdate() {
             },
             AUTO_UPDATE_INTERVAL
         );
+
+    updateCountdown();
 }
 
 
@@ -1567,12 +1582,12 @@ function stopAutoUpdate() {
 
         autoUpdateTimer = null;
     }
+
+    nextUpdateTime = 0;
+
+    updateCountdown();
 }
 
-
-/* =========================
-   شمارش معکوس
-========================= */
 
 function updateCountdown() {
 
@@ -1588,7 +1603,7 @@ function updateCountdown() {
     if (!nextUpdateTime) {
 
         countdown.textContent =
-            "05:00:00";
+            "--";
 
         return;
     }
@@ -1612,8 +1627,7 @@ function updateCountdown() {
 
     const minutes =
         Math.floor(
-            (totalSeconds % 3600) /
-            60
+            (totalSeconds % 3600) / 60
         );
 
     const seconds =
@@ -1626,23 +1640,6 @@ function updateCountdown() {
         ":" +
         String(seconds).padStart(2, "0");
 }
-
-
-countdownTimer =
-    setInterval(
-        updateCountdown,
-        1000
-    );
-
-
-/* =========================
-   تنظیمات
-========================= */
-
-const autoUpdate =
-    document.getElementById(
-        "autoUpdate"
-    );
 
 
 if (autoUpdate) {
@@ -1660,23 +1657,17 @@ if (autoUpdate) {
             } else {
 
                 stopAutoUpdate();
-
-                nextUpdateTime = 0;
-
-                const countdown =
-                    document.getElementById(
-                        "countdown"
-                    );
-
-                if (countdown) {
-
-                    countdown.textContent =
-                        "--";
-                }
             }
         }
     );
 }
+
+
+countdownTimer =
+    setInterval(
+        updateCountdown,
+        1000
+    );
 
 
 /* =========================
@@ -1804,31 +1795,43 @@ function updateDashboard(result) {
 
 
     if (topGainer) {
+
         topGainer.textContent =
             top.name;
     }
 
+
     if (topGainerPercent) {
 
         topGainerPercent.textContent =
-            (top.change >= 0 ? "+" : "") +
+            "+" +
             top.change.toFixed(2) +
             "%";
     }
 
 
     if (topLoser) {
+
         topLoser.textContent =
             bottom.name;
     }
 
+
     if (topLoserPercent) {
 
         topLoserPercent.textContent =
-            (bottom.change >= 0 ? "+" : "") +
             bottom.change.toFixed(2) +
             "%";
     }
+
+
+    const average =
+        changes.reduce(
+            (sum, item) =>
+                sum + item.change,
+            0
+        ) /
+        changes.length;
 
 
     const score =
@@ -1836,17 +1839,8 @@ function updateDashboard(result) {
             0,
             Math.min(
                 100,
-
                 50 +
-                (
-                    changes.reduce(
-                        (sum, item) =>
-                            sum + item.change,
-                        0
-                    ) /
-                    changes.length
-                ) *
-                10
+                average * 10
             )
         );
 
@@ -1914,16 +1908,8 @@ applyTheme();
 
 updateClock();
 
-
 /*
- * اولین دریافت قیمت
- */
+   اولین دریافت قیمت هنگام باز شدن سایت
+*/
 
 updatePrices();
-
-
-/*
- * شروع شمارش معکوس ۵ ساعته
- */
-
-startAutoUpdate();
